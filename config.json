@@ -1,0 +1,35 @@
+{
+	"use_com": true,
+	"use_hid": false,
+	"tcp_mode": "server",
+	"tcp_port": 5000,
+	"tcp_host": "192.168.1.100",
+  
+	"wifi": {
+	  "ssid": "YourWiFi",
+	  "password": "YourPassword",
+	  "static_ip": "192.168.1.50",
+	  "gateway": "192.168.1.1",
+	  "dns": "8.8.8.8"
+	},
+  
+	"lan": {
+	  "static_ip": "192.168.0.50",
+	  "gateway": "192.168.0.1",
+	  "dns": "8.8.4.4"
+	},
+  
+	"usb_com": {
+	  "port": "/dev/ttyUSB0",
+	  "baudrate": 9600,
+	  "databits": 8,
+	  "stopbits": 1,
+	  "parity": "none"
+	},
+  
+	"usb_hid": {
+	  "vid": 4660,
+	  "pid": 22136,
+	  "endpoint": 129
+	}
+  }
