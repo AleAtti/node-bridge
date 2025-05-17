@@ -1,0 +1,52 @@
+#include "config.h"
+#include <cjson/cJSON.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+Config load_config(const char *filename)
+{
+	Config cfg = {0};
+	FILE *f = fopen(filename, "r");
+	if (!f)
+		return cfg;
+	fseek(f, 0, SEEK_END);
+	long len = ftell(f);
+	rewind(f);
+	char *data = malloc(len + 1);
+	fread(data, 1, len, f);
+	data[len] = 0;
+	fclose(f);
+
+	cJSON *root = cJSON_Parse(data);
+	if (!root)
+		return cfg;
+
+	cfg.use_com = cJSON_GetObjectItem(root, "use_com")->valueint;
+	cfg.use_hid = cJSON_GetObjectItem(root, "use_hid")->valueint;
+	strcpy(cfg.tcp_mode, cJSON_GetObjectItem(root, "tcp_mode")->valuestring);
+	cfg.tcp_port = cJSON_GetObjectItem(root, "tcp_port")->valueint;
+	strcpy(cfg.tcp_host, cJSON_GetObjectItem(root, "tcp_host")->valuestring);
+
+	cJSON *wifi = cJSON_GetObjectItem(root, "wifi");
+	if (wifi)
+	{
+		strcpy(cfg.Wifi.ssid, cJSON_GetObjectItem(wifi, "ssid")->valuestring);
+		strcpy(cfg.Wifi.password, cJSON_GetObjectItem(wifi, "password")->valuestring);
+		strcpy(cfg.Wifi.static_ip, cJSON_GetObjectItem(wifi, "static_ip")->valuestring);
+		strcpy(cfg.Wifi.gateway, cJSON_GetObjectItem(wifi, "gateway")->valuestring);
+		strcpy(cfg.Wifi.dns, cJSON_GetObjectItem(wifi, "dns")->valuestring);
+	}
+
+	cJSON *lan = cJSON_GetObjectItem(root, "lan");
+	if (lan)
+	{
+		strcpy(cfg.Lan.static_ip, cJSON_GetObjectItem(lan, "static_ip")->valuestring);
+		strcpy(cfg.Lan.gateway, cJSON_GetObjectItem(lan, "gateway")->valuestring);
+		strcpy(cfg.Lan.dns, cJSON_GetObjectItem(lan, "dns")->valuestring);
+	}
+
+	cJSON_Delete(root);
+	free(data);
+	return cfg;
+}
