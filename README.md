@@ -25,3 +25,14 @@ nodebridge/
 ├── Makefile         # Build system
 └── README.md        # This file
 ```
+
+## Required packages I have installed on my Raspberry Pi
+- libcjson-dev 
+- libusb-1.0-0-dev 
+- libmicrohttpd-dev
+- gdb
+- build-essential
+- man-db --> Not necessary, but nice to have
+- manpages-dev --> Not necessary, but nice to have
+- glibc-doc --> Not necessary, but nice to have
+- xxd --> Not necessary, but nice to have
