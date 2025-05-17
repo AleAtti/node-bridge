@@ -46,6 +46,22 @@ Config load_config(const char *filename)
 		strcpy(cfg.Lan.dns, cJSON_GetObjectItem(lan, "dns")->valuestring);
 	}
 
+	cJSON* com = cJSON_GetObjectItem(root, "usb_com");
+    if (com) {
+        strcpy(cfg.UsbCom.port, cJSON_GetObjectItem(com, "port")->valuestring);
+        cfg.UsbCom.baudrate = cJSON_GetObjectItem(com, "baudrate")->valueint;
+        cfg.UsbCom.databits = cJSON_GetObjectItem(com, "databits")->valueint;
+        cfg.UsbCom.stopbits = cJSON_GetObjectItem(com, "stopbits")->valueint;
+        strcpy(cfg.UsbCom.parity, cJSON_GetObjectItem(com, "parity")->valuestring);
+    }
+
+    cJSON* hid = cJSON_GetObjectItem(root, "usb_hid");
+    if (hid) {
+        cfg.UsbHid.vid = cJSON_GetObjectItem(hid, "vid")->valueint;
+        cfg.UsbHid.pid = cJSON_GetObjectItem(hid, "pid")->valueint;
+        cfg.UsbHid.endpoint = cJSON_GetObjectItem(hid, "endpoint")->valueint;
+    }
+
 	cJSON_Delete(root);
 	free(data);
 	return cfg;
