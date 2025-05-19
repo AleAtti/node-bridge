@@ -1,11 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="./style.css">
+  <title>NodeBridge Configuration</title>
 </head>
 <body>
-    
+
+  <h1>NodeBridge Configuration</h1>
+  <form id="configForm">
+
+    <section class="section">
+      <h3>General Settings</h3>
+      <label>Device-Hostname</label>
+      <input type="text" id="hostname">
+      <label><input type="checkbox" id="usbComCheckbox"> USB-COM</label>
+      <label><input type="checkbox" id="usbHidCheckbox"> USB-HID</label>
+    </section>
+
+    <section class="section">
+      <h3>TCP Settings</h3>
+      <label>Mode:
+        <input type="text" id="tcpMode">
+      </label>
+      <label>Port:
+        <input type="number" id="tcpPort">
+      </label>
+      <label>Host:
+        <input type="text" id="tcpHost">
+      </label>
+    </section>
+
+    <section class="section">
+      <h3>Wi-Fi Settings</h3>
+      <label>SSID:
+        <input type="text" id="wifiSsid">
+      </label>
+      <label>Password:
+        <input type="password" id="wifiPassword">
+      </label>
+      <label>Static IP:
+        <input type="text" id="wifiIp">
+      </label>
+      <label>Gateway:
+        <input type="text" id="wifiGateway">
+      </label>
+      <label>DNS:
+        <input type="text" id="wifiDns">
+      </label>
+    </section>
+
+    <section class="section">
+      <h3>LAN Settings</h3>
+      <label>Static IP:
+        <input type="text" id="lanIp">
+      </label>
+      <label>Gateway:
+        <input type="text" id="lanGateway">
+      </label>
+      <label>DNS:
+        <input type="text" id="lanDns">
+      </label>
+    </section>
+
+    <section class="section">
+      <h3>USB-COM Settings</h3>
+      <label>Port:
+        <input type="text" id="usbComPort">
+      </label>
+      <label>Baudrate:
+        <input type="number" id="usbComBaud">
+      </label>
+      <label>Data Bits:
+        <input type="number" id="usbComDataBits">
+      </label>
+      <label>Stop Bits:
+        <input type="number" id="usbComStopBits">
+      </label>
+      <label>Parity:
+        <input type="text" id="usbComParity">
+      </label>
+    </section>
+
+    <section class="section">
+      <h3>USB-HID Settings</h3>
+      <label>VID:
+        <input type="number" id="usbHidVid">
+      </label>
+      <label>PID:
+        <input type="number" id="usbHidPid">
+      </label>
+      <label>Endpoint:
+        <input type="number" id="usbHidEndpoint">
+      </label>
+    </section>
+
+    <section class="section">
+      <h3>Raw Config (Read Only)</h3>
+      <textarea readonly id="configText"></textarea>
+    </section>
+
+    <button type="submit">Save Configuration</button>
+  </form>
+
+  <script src="script.js"></script>
 </body>
+</html>
 </html>
