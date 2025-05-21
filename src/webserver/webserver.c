@@ -1,3 +1,12 @@
+/*
+Author:           Alexander Attisani
+Description:      A small webserver to serve the web interface and handle configuration
+
+Resources:  https://www.gnu.org/software/libmicrohttpd/manual/libmicrohttpd.html#index-MHD_005fstart_005fdaemon
+            https://www.gnu.org/software/libmicrohttpd/
+            
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

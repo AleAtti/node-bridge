@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/config.h"
+#include "config.h"
+#include "webserver.h"
 
 void print_config(const Config* cfg) {
     printf("=== NodeBridge Config ===\n");
@@ -38,5 +39,7 @@ void print_config(const Config* cfg) {
 int main(int argc, char** argv){
     Config cfg = load_config("config.json");
     print_config(&cfg);
+    start_webserver(8080);
+
     return 0;
 }
