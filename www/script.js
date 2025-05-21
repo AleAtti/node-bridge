@@ -7,7 +7,6 @@
  *            
  */
 
-const filename = "/config.json";
 let config = null;
 const configForm = document.getElementById("configForm");
 
@@ -59,8 +58,6 @@ let usbHidEndpoint = document.getElementById('usbHidEndpoint');
 
 let configTextArea = document.getElementById('configText');
 
-
-
 /**
  * Fetches the configuration file and populates the form fields.
  * @param {string} filename
@@ -69,7 +66,7 @@ let configTextArea = document.getElementById('configText');
  * @throws {Error} If the response is not ok
  */
 window.addEventListener('DOMContentLoaded', () => {
-  fetch(filename)
+  fetch("/getConfig")
     .then(response => {
       if (!response.ok) throw new Error('Network response was not ok');
       return response.json();
@@ -127,36 +124,36 @@ configForm.addEventListener('submit', function(event) {
 
   /** @type {Config} */
   const config = {
-    use_com: usbComCheckBox.checked,
-    use_hid: usbHidCheckbox.checked,
-    tcp_mode: tcpMode.value,
-    tcp_port: tcpPort.value,
-    tcp_host: tcpHost.value,
-    wifi: {
-      ssid: wifiSsid.value,
-      password: wifiPassword.value,
-      static_ip: wifiIp.value,
-      gateway: wifiGateway.value,
-      dns: wifiDns.value
-    },
-    lan: {
-      static_ip: lanIp.value,
-      gateway: lanGateway.value,
-      dns: lanDns.value
-    },
-    usb_com: {
-      port: usbComPort.value,
-      baudrate: usbComBaud.value,
-      databits: usbComDataBits.value,
-      stopbits: usbComStopBits.value,
-      parity: usbComParity.value
-    },
-    usb_hid: {
-      vid: usbHidVid.value,
-      pid: usbHidPid.value,
-      endpoint: usbHidEndpoint.value
-    }
-  };
+  use_com: usbComCheckBox.checked,
+  use_hid: usbHidCheckbox.checked,
+  tcp_mode: tcpMode.value,
+  tcp_port: parseInt(tcpPort.value),       // converted to number
+  tcp_host: tcpHost.value,
+  wifi: {
+    ssid: wifiSsid.value,
+    password: wifiPassword.value,
+    static_ip: wifiIp.value,
+    gateway: wifiGateway.value,
+    dns: wifiDns.value
+  },
+  lan: {
+    static_ip: lanIp.value,
+    gateway: lanGateway.value,
+    dns: lanDns.value
+  },
+  usb_com: {
+    port: usbComPort.value,
+    baudrate: parseInt(usbComBaud.value),     //
+    databits: parseInt(usbComDataBits.value), //
+    stopbits: parseInt(usbComStopBits.value), //
+    parity: usbComParity.value
+  },
+  usb_hid: {
+    vid: parseInt(usbHidVid.value),           //
+    pid: parseInt(usbHidPid.value),           //
+    endpoint: parseInt(usbHidEndpoint.value)  
+  }
+};
 
   /**
    * Save config to server
@@ -167,7 +164,7 @@ configForm.addEventListener('submit', function(event) {
    * @throws {Error} If the response is not ok
    * @throws {Error} If the config is not valid
    */
-  fetch(filename, {
+  fetch("/setConfig", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -175,10 +172,13 @@ configForm.addEventListener('submit', function(event) {
     body: JSON.stringify(config)
   })
     .then(response => {
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
       return response.json();
     })
     .then(data => {
+      console.log('Config saved:', config);
       alert('Configuration saved successfully!');
     })
     .catch(error => {
