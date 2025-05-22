@@ -1,0 +1,13 @@
+[Unit]
+Description=NodeBridge USB-to-TCP Daemon
+After=network.target
+
+[Service]
+ExecStart=[path_to_executable]/nodebridge
+WorkingDirectory=[path]
+Restart=always
+User=[username]
+Environment=PATH=/usr/bin:/usr/local/bin
+
+[Install]
+WantedBy=multi-user.target
