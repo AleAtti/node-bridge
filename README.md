@@ -1,5 +1,13 @@
 # NodeBridge
 
+## TODO
+- Improve Webserver
+- Add TCP Server / Clien
+- Add USB HID / COM
+- Add Logs
+- Improve Config Frontend
+- make it more robust.
+
 **NodeBridge** is a lightweight I/O utility designed to connect USB devices—such as handheld scanners or other peripherals—to a network.
 It receives input via **USB-HID** or **USB-COM** and transmits the data over **TCP/IP**, acting as a smart bridge between local hardware and remote systems.
 
