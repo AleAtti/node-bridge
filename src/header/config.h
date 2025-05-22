@@ -3,12 +3,37 @@
 
 typedef struct config
 {
-    int use_com;
-    int use_hid;
-    char tcp_mode[16];
-    int tcp_port;
-    char tcp_host[64];
-    char hostname[64];
+    struct general
+    {
+        int use_com;
+        int use_hid;
+        char hostname[64];
+        char version[16];
+    } General;
+
+    struct webserver
+    {
+        char host[64];
+        int port;
+    } Webserver;
+
+    // Maybe future feature??
+    // struct mqtt
+    // {
+    //     char broker[64];
+    //     int port;
+    //     char topic[64];
+    //     char client_id[64];
+    //     char username[64];
+    //     char password[64];
+    // } Mqtt;
+
+    struct tcp
+    {
+        char mode[16];
+        int port;
+        char host[64];
+    } Tcp;
 
     struct wifi
     {
@@ -41,7 +66,7 @@ typedef struct config
         int pid;
         int endpoint;
     } UsbHid;
-    
+
 } Config;
 
 Config load_config(const char *filename);
