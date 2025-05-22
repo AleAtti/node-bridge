@@ -5,11 +5,11 @@
 
 void print_config(const Config* cfg) {
     printf("=== NodeBridge Config ===\n");
-    printf("use_com: %d\n", cfg->use_com);
-    printf("use_hid: %d\n", cfg->use_hid);
-    printf("tcp_mode: %s\n", cfg->tcp_mode);
-    printf("tcp_port: %d\n", cfg->tcp_port);
-    printf("tcp_host: %s\n", cfg->tcp_host);
+    printf("use_com: %d\n", cfg->General.use_com);
+    printf("use_hid: %d\n", cfg->General.use_hid);
+    printf("tcp_mode: %s\n", cfg->Tcp.mode);
+    printf("tcp_port: %d\n", cfg->Tcp.port);
+    printf("tcp_host: %s\n", cfg->Tcp.host);
 
     printf("\n[Wi-Fi]\n");
     printf("ssid: %s\n", cfg->Wifi.ssid);
@@ -39,7 +39,8 @@ void print_config(const Config* cfg) {
 int main(int argc, char** argv){
     Config cfg = load_config("config.json");
     print_config(&cfg);
-    start_webserver(8080);
+    printf("\n[WebServer] Starting on %s:%d\n", cfg.Webserver.host, cfg.Webserver.port);
+    start_webserver(cfg.Webserver.port);
 
     return 0;
 }
