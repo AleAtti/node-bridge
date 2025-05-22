@@ -13,15 +13,13 @@ const configForm = document.getElementById("configForm");
 /**
  * Element IDs
  * @typedef {Object} Config
- * @property {boolean} use_com
- * @property {boolean} use_hid
- * @property {string} tcp_mode
- * @property {string} tcp_port
- * @property {string} tcp_host
+ * @property {{use_com: number, use_hid: number, version: string, hostname: string}}general
+ * @property {{port: number, host: string}} webserver
+ * @property {{mode: string, port: number, host: string}} tcp
  * @property {{ssid: string, password: string, static_ip: string, gateway: string, dns: string}} wifi
  * @property {{static_ip: string, gateway: string, dns: string}} lan
- * @property {{port: string, baudrate: string, databits: string, stopbits: string, parity: string}} usb_com
- * @property {{vid: string, pid: string, endpoint: string}} usb_hid
+ * @property {{port: string, baudrate: number, databits: number, stopbits: number, parity: string}} usb_com
+ * @property {{vid: number, pid: number, endpoint: number}} usb_hid
  */
 // General section
 let usbComCheckBox = document.getElementById("usbComCheckbox");
@@ -72,12 +70,13 @@ window.addEventListener('DOMContentLoaded', () => {
       return response.json();
     })
     .then(config => {
+      console.log('Config loaded:', config.General);
       // Fill form fields from config
-      usbComCheckBox.checked = !!config.use_com;
-      usbHidCheckbox.checked = !!config.use_hid;
-      tcpMode.value = config.tcp_mode || '';
-      tcpPort.value = config.tcp_port || '';
-      tcpHost.value = config.tcp_host || '';
+      usbComCheckBox.checked = !!config.general?.use_com;
+      usbHidCheckbox.checked = !!config.general?.use_hid;
+      tcpMode.value = config.tcp?.mode || '';
+      tcpPort.value = config.tcp?.port || '';
+      tcpHost.value = config.tcp?.host || '';
 
       // WiFi fields
       wifiSsid.value = config.wifi?.ssid || '';
@@ -118,42 +117,52 @@ window.addEventListener('DOMContentLoaded', () => {
  * @throws {Error} If the fetch fails or the response is not valid JSON
  * @throws {Error} If the response is not ok
  * @throws {Error} If the config is not valid
- *  */ 
-configForm.addEventListener('submit', function(event) {
+ *  */
+configForm.addEventListener('submit', function (event) {
   event.preventDefault();
 
   /** @type {Config} */
   const config = {
-  use_com: usbComCheckBox.checked,
-  use_hid: usbHidCheckbox.checked,
-  tcp_mode: tcpMode.value,
-  tcp_port: parseInt(tcpPort.value),       // converted to number
-  tcp_host: tcpHost.value,
-  wifi: {
-    ssid: wifiSsid.value,
-    password: wifiPassword.value,
-    static_ip: wifiIp.value,
-    gateway: wifiGateway.value,
-    dns: wifiDns.value
-  },
-  lan: {
-    static_ip: lanIp.value,
-    gateway: lanGateway.value,
-    dns: lanDns.value
-  },
-  usb_com: {
-    port: usbComPort.value,
-    baudrate: parseInt(usbComBaud.value),     //
-    databits: parseInt(usbComDataBits.value), //
-    stopbits: parseInt(usbComStopBits.value), //
-    parity: usbComParity.value
-  },
-  usb_hid: {
-    vid: parseInt(usbHidVid.value),           //
-    pid: parseInt(usbHidPid.value),           //
-    endpoint: parseInt(usbHidEndpoint.value)  
-  }
-};
+    general: {
+      hostname: "Node_bridge",
+      version: "1.0.0",
+      use_com: usbComCheckBox.checked,
+      use_hid: usbHidCheckbox.checked
+    },
+    webserver: {
+      port: parseInt(tcpPort.value),
+      host: tcpHost.value
+    },
+    tcp: {
+      mode: tcpMode.value,
+      port: parseInt(tcpPort.value),
+      host: tcpHost.value
+    },
+    wifi: {
+      ssid: wifiSsid.value,
+      password: wifiPassword.value,
+      static_ip: wifiIp.value,
+      gateway: wifiGateway.value,
+      dns: wifiDns.value
+    },
+    lan: {
+      static_ip: lanIp.value,
+      gateway: lanGateway.value,
+      dns: lanDns.value
+    },
+    usb_com: {
+      port: usbComPort.value,
+      baudrate: parseInt(usbComBaud.value),
+      databits: parseInt(usbComDataBits.value),
+      stopbits: parseInt(usbComStopBits.value),
+      parity: usbComParity.value
+    },
+    usb_hid: {
+      vid: parseInt(usbHidVid.value),
+      pid: parseInt(usbHidPid.value),
+      endpoint: parseInt(usbHidEndpoint.value)
+    }
+  };
 
   /**
    * Save config to server
