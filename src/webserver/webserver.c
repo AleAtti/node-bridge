@@ -4,7 +4,7 @@ Description:      A small webserver to serve the web interface and handle config
 
 Resources:  https://www.gnu.org/software/libmicrohttpd/manual/libmicrohttpd.html#index-MHD_005fstart_005fdaemon
             https://www.gnu.org/software/libmicrohttpd/
-            
+
 */
 
 #include <stdio.h>
@@ -14,29 +14,16 @@ Resources:  https://www.gnu.org/software/libmicrohttpd/manual/libmicrohttpd.html
 #include <cjson/cJSON.h>
 #include "utils.h"
 #include "config.h"
+#include "mime.h"
 
 #include "webserver.h"
 static const char *ok_json = "{\"status\":\"ok\"}";
 
-static const char *get_mime_type(const char *path)
+typedef struct
 {
-    const char *ext = strrchr(path, '.');
-    if (!ext)
-        return "application/octet-stream";
-    if (strcmp(ext, ".html") == 0)
-        return "text/html";
-    if (strcmp(ext, ".css") == 0)
-        return "text/css";
-    if (strcmp(ext, ".js") == 0)
-        return "application/javascript";
-    if (strcmp(ext, ".json") == 0)
-        return "application/json";
-    if (strcmp(ext, ".png") == 0)
-        return "image/png";
-    if (strcmp(ext, ".jpg") == 0 || strcmp(ext, ".jpeg") == 0)
-        return "image/jpeg";
-    return "application/octet-stream";
-}
+    char *data;
+    size_t size;
+} PostData;
 
 static enum MHD_Result answer_to_connection(void *cls,
                                             struct MHD_Connection *connection,
@@ -64,39 +51,34 @@ static enum MHD_Result answer_to_connection(void *cls,
     // Handle POST /setConfig
     if (strcmp(url, "/setConfig") == 0 && strcmp(method, "POST") == 0)
     {
-        static char *post_data = NULL;
         if (*con_cls == NULL)
         {
-            // First call → allocate
-            *con_cls = (void *)1; // Just a marker
-            post_data = calloc(1, 1);
+            PostData *pd = calloc(1, sizeof(PostData));
+            *con_cls = pd;
             return MHD_YES;
         }
 
+        PostData *pd = *con_cls;
+
         if (*upload_data_size > 0)
         {
-            // Accumulate incoming data
-            post_data = realloc(post_data, strlen(post_data) + *upload_data_size + 1);
-            strncat(post_data, upload_data, *upload_data_size);
+            pd->data = realloc(pd->data, pd->size + *upload_data_size + 1); // +1 for null-termination
+            memcpy(pd->data + pd->size, upload_data, *upload_data_size);
+            pd->size += *upload_data_size;
+            pd->data[pd->size] = '\0'; // Null-terminieren für JSON-Kompatibilität
             *upload_data_size = 0;
             return MHD_YES;
         }
 
-        // Final call — save to file
-        FILE *fp = fopen("config.json", "w");
-        if (fp)
-        {
-            fwrite(post_data, 1, strlen(post_data), fp);
-            fclose(fp);
-        }
+        save_file("config.json", pd->data, pd->size);
 
         // Optional: reload and validate
         Config cfg = load_config("config.json");
         printf("[WebServer] Config reloaded: COM %d, HID %d, Hostname %s\n",
-               cfg.use_com, cfg.use_hid, cfg.hostname);
+               cfg.General.use_com, cfg.General.use_hid, cfg.General.hostname);
 
-        free(post_data);
-        post_data = NULL;
+        free(pd->data);
+        free(pd);
         *con_cls = NULL;
 
         // Respond to JS
@@ -129,7 +111,6 @@ static enum MHD_Result answer_to_connection(void *cls,
 
     // Determine MIME type
     const char *mime = get_mime_type(filepath);
-
     // Serve file
     struct MHD_Response *response = MHD_create_response_from_buffer(size, data, MHD_RESPMEM_MUST_FREE);
     MHD_add_response_header(response, "Content-Type", mime);
@@ -146,7 +127,8 @@ int start_webserver(int server_port)
         return 1;
 
     printf("Server running on http://localhost:%d\n", server_port);
-    getchar(); // Wait for enter key to stop
+    pause(); // Wait for CTRl+C to exit
+
     MHD_stop_daemon(daemon);
 
     return 0;
