@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include "config.h"
 #include "webserver.h"
+#include "usb_hid.h"
 
 void print_config(const Config* cfg) {
     printf("=== NodeBridge Config ===\n");
@@ -39,6 +41,10 @@ void print_config(const Config* cfg) {
 int main(int argc, char** argv){
     Config cfg = load_config("config.json");
     print_config(&cfg);
+    if (!cfg.General.use_hid)
+    {
+        list_usb_devices();
+    }
     printf("\n[WebServer] Starting on %s:%d\n", cfg.Webserver.host, cfg.Webserver.port);
     start_webserver(cfg.Webserver.port);
 

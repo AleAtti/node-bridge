@@ -1,7 +1,7 @@
 EXEC = nodebridge           # target executable
 CC = gcc                    # compiler 
 CFLAGS = -c -Wall -pedantic -O0 -g -Isrc/header
-LDFLAGS = -lcjson -lmicrohttpd #-lusb-1.0 -lpthread
+LDFLAGS = -lcjson -lmicrohttpd -lusb-1.0  -lpthread -lhidapi-hidraw
 
 SRC := $(shell find src -name '*.c')
 OBJECTS := $(patsubst %.c, %.o, $(SRC))
