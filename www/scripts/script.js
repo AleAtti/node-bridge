@@ -64,6 +64,11 @@ let configTextArea = document.getElementById('configText');
  * @throws {Error} If the response is not ok
  */
 window.addEventListener('DOMContentLoaded', () => {
+  getConfig();
+});
+
+
+function getConfig() {
   fetch("/getConfig")
     .then(response => {
       if (!response.ok) throw new Error('Network response was not ok');
@@ -108,7 +113,63 @@ window.addEventListener('DOMContentLoaded', () => {
       console.error('Error loading config:', error);
       alert('Failed to load configuration. Please check your connection or config file.');
     });
-});
+}
+
+/**
+   * Save config to server
+   * @param {string} filename
+   * @param {Config} config
+   * @returns {Promise<void>}
+   * @throws {Error} If the fetch fails or the response is not valid JSON
+   * @throws {Error} If the response is not ok
+   * @throws {Error} If the config is not valid
+   */
+  function postConfig(config) {
+    fetch("/setConfig", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(config)
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      alert('Configuration saved successfully!');
+    })
+    .catch(error => {
+      console.error('Error saving config:', error);
+      alert('Failed to save configuration. Please check your connection or config file.');
+    });
+
+  };
+
+  function postReboot() {
+    fetch("/reboot", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        alert('Reboot command sent successfully!');
+      })
+      .catch(error => {
+        console.error('Error sending reboot command:', error);
+        alert('Failed to send reboot command. Please check your connection.');
+      });
+  }
+
 
 /**
  * Handle form submission to save config
@@ -163,36 +224,7 @@ configForm.addEventListener('submit', function (event) {
       endpoint: parseInt(usbHidEndpoint.value)
     }
   };
-
-  /**
-   * Save config to server
-   * @param {string} filename
-   * @param {Config} config
-   * @returns {Promise<void>}
-   * @throws {Error} If the fetch fails or the response is not valid JSON
-   * @throws {Error} If the response is not ok
-   * @throws {Error} If the config is not valid
-   */
-  fetch("/setConfig", {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(config)
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Config saved:', config);
-      alert('Configuration saved successfully!');
-    })
-    .catch(error => {
-      console.error('Error saving config:', error);
-      alert('Failed to save configuration. Please check your connection or config file.');
-    });
+  postConfig(config);
+  postReboot();
 });
 
