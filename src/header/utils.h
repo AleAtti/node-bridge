@@ -6,6 +6,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stddef.h>  
+
 /*
  * Function to assert a condition and print an error message if the condition is false.
  * Input:   A condition, a message, function name, file name, and line number.

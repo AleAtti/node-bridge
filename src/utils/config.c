@@ -1,4 +1,5 @@
 #include "config.h"
+#include "utils.h"
 #include <cjson/cJSON.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,16 +8,13 @@
 Config load_config(const char *filename)
 {
 	Config cfg = {0};
-	FILE *f = fopen(filename, "r");
-	if (!f)
-		return cfg;
-	fseek(f, 0, SEEK_END);
-	long len = ftell(f);
-	rewind(f);
-	char *data = malloc(len + 1);
-	fread(data, 1, len, f);
-	data[len] = 0;
-	fclose(f);
+	size_t size;
+	char *data = read_file(filename, &size);
+	if (!data || size == 0)
+	{
+		fprintf(stderr, "Error reading config file: %s\n", filename);
+		return cfg; // Return empty config if file read fails
+	}
 
 	cJSON *root = cJSON_Parse(data);
 	if (!root)
@@ -31,10 +29,19 @@ Config load_config(const char *filename)
 	cJSON *general = cJSON_GetObjectItem(root, "general");
 	if (general)
 	{
-		strcpy(cfg.General.hostname, cJSON_GetObjectItem(general, "hostname")->valuestring);
-		strcpy(cfg.General.version, cJSON_GetObjectItem(general, "version")->valuestring);
-		cfg.General.use_com = cJSON_GetObjectItem(general, "use_com")->valuestring;
-		cfg.General.use_hid = cJSON_GetObjectItem(general, "use_hid")->valuestring;
+		cJSON *hn = cJSON_GetObjectItem(general, "hostname");
+		cJSON *ver = cJSON_GetObjectItem(general, "version");
+		cJSON *use_com = cJSON_GetObjectItem(general, "use_com");
+		cJSON *use_hid = cJSON_GetObjectItem(general, "use_hid");
+
+		if (cJSON_IsString(hn))
+			strncpy(cfg.General.hostname, hn->valuestring, sizeof(cfg.General.hostname));
+		if (cJSON_IsString(ver))
+			strncpy(cfg.General.version, ver->valuestring, sizeof(cfg.General.version));
+		if (cJSON_IsNumber(use_com))
+			cfg.General.use_com = use_com->valueint;
+		if (cJSON_IsNumber(use_hid))
+			cfg.General.use_hid = use_hid->valueint;
 	}
 
 	cJSON *webserver = cJSON_GetObjectItem(root, "webserver");
@@ -83,8 +90,13 @@ Config load_config(const char *filename)
 	cJSON *hid = cJSON_GetObjectItem(root, "usb_hid");
 	if (hid)
 	{
-		cfg.UsbHid.vid = cJSON_GetObjectItem(hid, "vid")->valueint;
-		cfg.UsbHid.pid = cJSON_GetObjectItem(hid, "pid")->valueint;
+		cJSON *vid_json = cJSON_GetObjectItem(hid, "vid");
+		cJSON *pid_json = cJSON_GetObjectItem(hid, "pid");
+		if (cJSON_IsString(vid_json) && cJSON_IsString(pid_json))
+		{
+			cfg.UsbHid.vid = (int)strtol(vid_json->valuestring, NULL, 16); // Convert hex string to int
+			cfg.UsbHid.pid = (int)strtol(pid_json->valuestring, NULL, 16);
+		}
 		cfg.UsbHid.endpoint = cJSON_GetObjectItem(hid, "endpoint")->valueint;
 	}
 

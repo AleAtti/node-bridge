@@ -1,12 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include "utils.h"
 #include "config.h"
 #include "webserver.h"
 #include "usb_hid.h"
 
+// void *hid_thread(void *arg) {
+//     usb_hid_start((HIDConfig *)arg);
+//     return NULL;
+// }
+
 void print_config(const Config* cfg) {
     printf("=== NodeBridge Config ===\n");
+    printf("use_com: %s\n", cfg->General.version);
+    printf("use_hid: %s\n", cfg->General.hostname);
     printf("use_com: %d\n", cfg->General.use_com);
     printf("use_hid: %d\n", cfg->General.use_hid);
     printf("tcp_mode: %s\n", cfg->Tcp.mode);
@@ -41,9 +49,11 @@ void print_config(const Config* cfg) {
 int main(int argc, char** argv){
     Config cfg = load_config("config.json");
     print_config(&cfg);
+    // pthread_t hid_t;
     if (!cfg.General.use_hid)
     {
         list_usb_devices();
+        pthread_create(&hid_t, NULL, hid_thread, &cfg.UsbHid);
     }
     printf("\n[WebServer] Starting on %s:%d\n", cfg.Webserver.host, cfg.Webserver.port);
     start_webserver(cfg.Webserver.port);
