@@ -34,7 +34,7 @@
         "parity": "none"
     },
     "usb_hid": {
-        "vid": "404d",
+        "vid": "046d",
         "pid": "404d",
         "endpoint": 2
     }

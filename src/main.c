@@ -50,7 +50,7 @@ int main(int argc, char** argv){
     Config cfg = load_config("config.json");
     print_config(&cfg);
     pthread_t hid_t;
-    if (!cfg.General.use_hid)
+    if (cfg.General.use_hid)
     {
         list_usb_devices();
         pthread_create(&hid_t, NULL, hid_thread, &cfg.UsbHid);
