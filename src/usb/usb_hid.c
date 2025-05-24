@@ -4,12 +4,6 @@
 #include <hidapi/hidapi.h>
 #include "usb_hid.h"
 
-typedef struct {
-    int vid;
-    int pid;
-    int endpoint;
-} HIDConfig;
-
 void usb_hid_start(HIDConfig *cfg) {
     if (hid_init()) {
         fprintf(stderr, "[USB-HID] Initialization failed\n");
