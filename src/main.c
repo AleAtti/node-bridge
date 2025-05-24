@@ -5,19 +5,23 @@
 #include "config.h"
 #include "webserver.h"
 #include "usb_hid.h"
-#include "usb_com.h"
+ #include "usb_com.h"
 
-void *hid_thread(void *arg) {
+
+void *hid_thread(void *arg)
+{
     usb_hid_start((HIDConfig *)arg);
     return NULL;
 }
 
-void *com_thread(void *arg) {
+void *com_thread(void *arg)
+{
     usb_com_start((COMConfig *)arg);
     return NULL;
 }
 
-void print_config(const Config* cfg) {
+void print_config(const Config *cfg)
+{
     printf("=== NodeBridge Config ===\n");
     printf("use_com: %s\n", cfg->General.version);
     printf("use_hid: %s\n", cfg->General.hostname);
@@ -52,7 +56,9 @@ void print_config(const Config* cfg) {
     printf("Endpoint: %d\n", cfg->UsbHid.endpoint);
 }
 
-int main(int argc, char** argv){
+
+int main(int argc, char **argv)
+{
     Config cfg = load_config("config.json");
     print_config(&cfg);
     pthread_t hid_t, com_t;
@@ -68,7 +74,7 @@ int main(int argc, char** argv){
         printf("[DEBUG] Port: %s\n", cfg.UsbCom.port);
         pthread_create(&com_t, NULL, com_thread, &cfg.UsbCom);
     }
-   
+
     printf("\n[WebServer] Starting on %s:%d\n", cfg.Webserver.host, cfg.Webserver.port);
     start_webserver(cfg.Webserver.port);
 

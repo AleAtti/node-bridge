@@ -17,6 +17,9 @@ static speed_t get_baudrate(int baud) {
 }
 
 void usb_com_start(COMConfig *cfg) {
+
+    printf("[USB-COM] Opening port: %s (baud %d)\n", cfg->port, cfg->baudrate);
+
     if (!cfg) {
         fprintf(stderr, "[USB-COM] ERROR: cfg is NULL\n");
         return;
