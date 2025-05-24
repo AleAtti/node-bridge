@@ -87,23 +87,27 @@ Config load_config(const char *filename)
 		cJSON *parity = cJSON_GetObjectItem(com, "parity");
 
 		if (cJSON_IsString(port))
+		{
 			strncpy(cfg.UsbCom.port, port->valuestring, sizeof(cfg.UsbCom.port));
+			cfg.UsbCom.port[sizeof(cfg.UsbCom.port) - 1] = '\0';
+		}
 		else
-			fprintf(stderr, "[Config] Missing or invalid usb_com.port\n");
+		{
+			fprintf(stderr, "[Config] usb_com.port missing or invalid\n");
+		}
 
 		if (cJSON_IsNumber(baud))
 			cfg.UsbCom.baudrate = baud->valueint;
-		else
-			fprintf(stderr, "[Config] Missing or invalid usb_com.baudrate\n");
-
 		if (cJSON_IsNumber(data))
 			cfg.UsbCom.databits = data->valueint;
-
 		if (cJSON_IsNumber(stop))
 			cfg.UsbCom.stopbits = stop->valueint;
 
 		if (cJSON_IsString(parity))
+		{
 			strncpy(cfg.UsbCom.parity, parity->valuestring, sizeof(cfg.UsbCom.parity));
+			cfg.UsbCom.parity[sizeof(cfg.UsbCom.parity) - 1] = '\0';
+		}
 	}
 
 	cJSON *hid = cJSON_GetObjectItem(root, "usb_hid");

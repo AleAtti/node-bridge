@@ -65,6 +65,7 @@ int main(int argc, char** argv){
     else if (!cfg.General.use_hid && cfg.General.use_com)
     {
         printf("[USB-COM] Starting...\n");
+        printf("[DEBUG] Port: %s\n", cfg.UsbCom.port);
         pthread_create(&com_t, NULL, com_thread, &cfg.UsbCom);
     }
    
