@@ -53,7 +53,7 @@ int main(int argc, char** argv){
     if (!cfg.General.use_hid)
     {
         list_usb_devices();
-        pthread_create(&hid_t, NULL, hid_thread, &cfg.UsbHid);
+        // pthread_create(&hid_t, NULL, hid_thread, &cfg.UsbHid);
     }
     printf("\n[WebServer] Starting on %s:%d\n", cfg.Webserver.host, cfg.Webserver.port);
     start_webserver(cfg.Webserver.port);

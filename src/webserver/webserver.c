@@ -38,9 +38,9 @@ static enum MHD_Result handle_get_config(struct MHD_Connection *connection)
 }
 
 static enum MHD_Result handle_set_config(struct MHD_Connection *connection,
-                                  const char *upload_data,
-                                  size_t *upload_data_size,
-                                  void **con_cls)
+                                         const char *upload_data,
+                                         size_t *upload_data_size,
+                                         void **con_cls)
 {
     if (*con_cls == NULL)
     {
@@ -84,8 +84,8 @@ static enum MHD_Result handle_reboot(struct MHD_Connection *connection)
     return MHD_YES;
 }
 
-static enum MHD_Result handle_static_file(struct MHD_Connection *connection, const char *url) {
-
+static enum MHD_Result handle_static_file(struct MHD_Connection *connection, const char *url)
+{
 
     char filepath[256];
 
@@ -96,7 +96,8 @@ static enum MHD_Result handle_static_file(struct MHD_Connection *connection, con
 
     size_t size;
     char *data = read_file(filepath, &size);
-    if (!data) {
+    if (!data)
+    {
         const char *not_found = "404 Not Found";
         struct MHD_Response *response = MHD_create_response_from_buffer(strlen(not_found), (void *)not_found, MHD_RESPMEM_PERSISTENT);
         return MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, response);
@@ -138,14 +139,12 @@ static enum MHD_Result answer_to_connection(void *cls,
 
     return handle_static_file(connection, url);
 
-    
-        // Ignore favicon requests
+    // Ignore favicon requests
     if (strcmp(url, "/favicon.ico") == 0)
     {
         struct MHD_Response *response = MHD_create_response_from_buffer(0, "", MHD_RESPMEM_PERSISTENT);
         return MHD_queue_response(connection, MHD_HTTP_NO_CONTENT, response);
     }
-
 }
 
 int start_webserver(int server_port)
@@ -155,7 +154,11 @@ int start_webserver(int server_port)
     daemon = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, server_port, NULL, NULL,
                               &answer_to_connection, NULL, MHD_OPTION_END);
     if (NULL == daemon)
+    {
+        fprintf(stderr, "[WebServer] Failed to start on port %d\n", server_port);
+        perror("MHD_start_daemon");
         return 1;
+    }
 
     printf("Server running on http://localhost:%d\n", server_port);
     pause(); // Wait for CTRl+C to exit
