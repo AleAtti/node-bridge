@@ -17,8 +17,18 @@ static speed_t get_baudrate(int baud) {
 }
 
 void usb_com_start(COMConfig *cfg) {
-    if (!cfg || !cfg->port || strlen(cfg->port) == 0) {
-        fprintf(stderr, "[USB-COM] Invalid or missing serial port path\n");
+    if (!cfg) {
+        fprintf(stderr, "[USB-COM] ERROR: cfg is NULL\n");
+        return;
+    }
+
+    if (!cfg->port) {
+        fprintf(stderr, "[USB-COM] ERROR: cfg->port is NULL\n");
+        return;
+    }
+
+    if (strlen(cfg->port) == 0) {
+        fprintf(stderr, "[USB-COM] ERROR: cfg->port is empty\n");
         return;
     }
 
