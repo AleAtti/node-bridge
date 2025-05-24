@@ -187,8 +187,8 @@ configForm.addEventListener('submit', function (event) {
     general: {
       hostname: "Node_bridge",
       version: "1.0.0",
-      use_com: usbComCheckBox.checked,
-      use_hid: usbHidCheckbox.checked
+      use_com: +usbComCheckBox.checked,
+      use_hid: +usbHidCheckbox.checked
     },
     webserver: {
       port: parseInt(tcpPort.value),

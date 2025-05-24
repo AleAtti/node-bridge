@@ -1,4 +1,3 @@
-// src/usb/usb_com.c
 #include "usb_com.h"
 #include <stdio.h>
 #include <fcntl.h>
@@ -6,7 +5,25 @@
 #include <unistd.h>
 #include <string.h>
 
+static speed_t get_baudrate(int baud) {
+    switch (baud) {
+        case 9600: return B9600;
+        case 19200: return B19200;
+        case 38400: return B38400;
+        case 57600: return B57600;
+        case 115200: return B115200;
+        default: return B9600;
+    }
+}
+
 void usb_com_start(COMConfig *cfg) {
+    if (!cfg || !cfg->port || strlen(cfg->port) == 0) {
+        fprintf(stderr, "[USB-COM] Invalid or missing serial port path\n");
+        return;
+    }
+
+    printf("[USB-COM] Opening port: %s (baud %d)\n", cfg->port, cfg->baudrate);
+
     int fd = open(cfg->port, O_RDWR | O_NOCTTY);
     if (fd < 0) {
         perror("[USB-COM] Failed to open serial port");
@@ -17,14 +34,14 @@ void usb_com_start(COMConfig *cfg) {
     memset(&tty, 0, sizeof tty);
     tcgetattr(fd, &tty);
 
-    cfsetospeed(&tty, cfg->baudrate);
-    cfsetispeed(&tty, cfg->baudrate);
+    speed_t baud = get_baudrate(cfg->baudrate);
+    cfsetospeed(&tty, baud);
+    cfsetispeed(&tty, baud);
     tty.c_cflag |= (CLOCAL | CREAD);
-
-    tty.c_cflag &= ~PARENB; // No parity
-    tty.c_cflag &= ~CSTOPB; // 1 stop bit
+    tty.c_cflag &= ~PARENB;
+    tty.c_cflag &= ~CSTOPB;
     tty.c_cflag &= ~CSIZE;
-    tty.c_cflag |= CS8;     // 8 data bits
+    tty.c_cflag |= CS8;
 
     tcsetattr(fd, TCSANOW, &tty);
 
