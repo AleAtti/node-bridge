@@ -80,11 +80,30 @@ Config load_config(const char *filename)
 	cJSON *com = cJSON_GetObjectItem(root, "usb_com");
 	if (com)
 	{
-		strcpy(cfg.UsbCom.port, cJSON_GetObjectItem(com, "port")->valuestring);
-		cfg.UsbCom.baudrate = cJSON_GetObjectItem(com, "baudrate")->valueint;
-		cfg.UsbCom.databits = cJSON_GetObjectItem(com, "databits")->valueint;
-		cfg.UsbCom.stopbits = cJSON_GetObjectItem(com, "stopbits")->valueint;
-		strcpy(cfg.UsbCom.parity, cJSON_GetObjectItem(com, "parity")->valuestring);
+		cJSON *port = cJSON_GetObjectItem(com, "port");
+		cJSON *baud = cJSON_GetObjectItem(com, "baudrate");
+		cJSON *data = cJSON_GetObjectItem(com, "databits");
+		cJSON *stop = cJSON_GetObjectItem(com, "stopbits");
+		cJSON *parity = cJSON_GetObjectItem(com, "parity");
+
+		if (cJSON_IsString(port))
+			strncpy(cfg.UsbCom.port, port->valuestring, sizeof(cfg.UsbCom.port));
+		else
+			fprintf(stderr, "[Config] Missing or invalid usb_com.port\n");
+
+		if (cJSON_IsNumber(baud))
+			cfg.UsbCom.baudrate = baud->valueint;
+		else
+			fprintf(stderr, "[Config] Missing or invalid usb_com.baudrate\n");
+
+		if (cJSON_IsNumber(data))
+			cfg.UsbCom.databits = data->valueint;
+
+		if (cJSON_IsNumber(stop))
+			cfg.UsbCom.stopbits = stop->valueint;
+
+		if (cJSON_IsString(parity))
+			strncpy(cfg.UsbCom.parity, parity->valuestring, sizeof(cfg.UsbCom.parity));
 	}
 
 	cJSON *hid = cJSON_GetObjectItem(root, "usb_hid");
