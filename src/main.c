@@ -5,9 +5,15 @@
 #include "config.h"
 #include "webserver.h"
 #include "usb_hid.h"
+#include "usb_com.h"
 
 void *hid_thread(void *arg) {
     usb_hid_start((HIDConfig *)arg);
+    return NULL;
+}
+
+void *com_thread(void *arg) {
+    usb_com_start((COMConfig *)arg);
     return NULL;
 }
 
@@ -49,12 +55,19 @@ void print_config(const Config* cfg) {
 int main(int argc, char** argv){
     Config cfg = load_config("config.json");
     print_config(&cfg);
-    pthread_t hid_t;
-    if (cfg.General.use_hid)
+    pthread_t hid_t, com_t;
+    if (cfg.General.use_hid && !cfg.General.use_com)
     {
+        printf("\n[USB-HID] Starting...\n");
         list_usb_devices();
         pthread_create(&hid_t, NULL, hid_thread, &cfg.UsbHid);
     }
+    else if (!cfg.General.use_hid && cfg.General.use_com)
+    {
+        printf("[USB-COM] Starting...\n");
+        pthread_create(&com_t, NULL, com_thread, &cfg.UsbCom);
+    }
+   
     printf("\n[WebServer] Starting on %s:%d\n", cfg.Webserver.host, cfg.Webserver.port);
     start_webserver(cfg.Webserver.port);
 
