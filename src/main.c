@@ -83,12 +83,12 @@ int main(int argc, char **argv)
     if (strcmp(cfg.Tcp.mode, "server") == 0)
     {
         printf("\n[TCP Server] Starting on port %d\n", cfg.Tcp.port);
-        start_tcp_server(cfg.Tcp.port);
+        tcp_server_start(cfg.Tcp.port);
     }
     else if (strcmp(cfg.Tcp.mode, "client") == 0)
     {
         printf("\n[TCP Client] Connecting to %s:%d\n", cfg.Tcp.host, cfg.Tcp.port);
-        start_tcp_client(cfg.Tcp.host, cfg.Tcp.port);
+        tcp_client_start(cfg.Tcp.host, cfg.Tcp.port);
     }
    
     

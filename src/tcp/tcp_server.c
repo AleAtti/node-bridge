@@ -105,7 +105,7 @@ static void *tcp_server_thread(void *arg){
     }
 }
 
-void *start_tcp_server(int port) {
+void *tcp_server_start(int port) {
     pthread_t server_thread;
     int *port_ptr = malloc(sizeof(int));
     if (!port_ptr) {
@@ -123,7 +123,7 @@ void *start_tcp_server(int port) {
     return 0;
 }
 
-int tcp_send(const void *data, size_t size) {
+int tcp_server_send(const void *data, size_t size) {
     int sent_count = 0;
     pthread_mutex_lock(&client_mutex);
     for (int i = 0; i < client_count; i++) {

@@ -69,7 +69,7 @@ void tcp_client_start(const char *host, int port) {
     pthread_detach(tid);
 }
 
-int tcp_send(const void *data, size_t len) {
+int tcp_client_send(const void *data, size_t len) {
     int sent = 0;
     pthread_mutex_lock(&client_lock);
     if (client_fd >= 0) {
