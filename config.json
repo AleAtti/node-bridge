@@ -11,8 +11,8 @@
     },
     "tcp": {
         "mode": "server",
-        "port": 8080,
-        "host": "192.168.1.100"
+        "port": 9000,
+        "host": "192.168.178.67"
     },
     "wifi": {
         "ssid": "YourSSID",

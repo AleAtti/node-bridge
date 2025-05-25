@@ -10,6 +10,7 @@
 #include "usb_hid.h"
 #include "usb_com.h"
 #include "tcp_server.h"
+#include "tcp_client.h"
 
 
 void *hid_thread(void *arg)
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
     else if (strcmp(cfg.Tcp.mode, "client") == 0)
     {
         printf("\n[TCP Client] Connecting to %s:%d\n", cfg.Tcp.host, cfg.Tcp.port);
-        // Implement TCP client connection logic here
+        start_tcp_client(cfg.Tcp.host, cfg.Tcp.port);
     }
    
     
