@@ -10,7 +10,7 @@
 #include "tcp_client.h"
 
 static int client_fd = -1;
-static pthread_mutex_t client_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t client_lock = PTHREAD_MUTEX_INITIALIZER;
 
 static void *tcp_client_thread(void *arg)
 {
