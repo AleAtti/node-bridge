@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <string.h>
+
+
 #include "utils.h"
 #include "config.h"
 #include "webserver.h"
 #include "usb_hid.h"
- #include "usb_com.h"
+#include "usb_com.h"
+#include "tcp_server.h"
 
 
 void *hid_thread(void *arg)
@@ -74,6 +78,19 @@ int main(int argc, char **argv)
         printf("[DEBUG] Port: %s\n", cfg.UsbCom.port);
         pthread_create(&com_t, NULL, com_thread, &cfg.UsbCom);
     }
+
+    if (strcmp(cfg.Tcp.mode, "server") == 0)
+    {
+        printf("\n[TCP Server] Starting on port %d\n", cfg.Tcp.port);
+        start_tcp_server(cfg.Tcp.port);
+    }
+    else if (strcmp(cfg.Tcp.mode, "client") == 0)
+    {
+        printf("\n[TCP Client] Connecting to %s:%d\n", cfg.Tcp.host, cfg.Tcp.port);
+        // Implement TCP client connection logic here
+    }
+   
+    
 
     printf("\n[WebServer] Starting on %s:%d\n", cfg.Webserver.host, cfg.Webserver.port);
     start_webserver(cfg.Webserver.port);
