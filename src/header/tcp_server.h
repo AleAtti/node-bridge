@@ -3,7 +3,7 @@
 
 #define MAX_CLIENTS 10
 
-void tcp_server_start(int port);
-int tcp_server_send(const char *data, size_t len);
+void *tcp_server_start(int port);
+int tcp_server_send(const void *data, size_t size);
 
 #endif
