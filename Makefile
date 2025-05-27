@@ -19,5 +19,6 @@ clear: clean
 
 clean:
 	rm -f *.o src/*.o
+	find src -name '*.o' -delete
 
 .PHONY: clear clean
