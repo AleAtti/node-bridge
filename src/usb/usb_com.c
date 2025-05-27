@@ -4,6 +4,8 @@
 #include <termios.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
+#include "forwarder.h"
 
 static speed_t get_baudrate(int baud) {
     switch (baud) {
@@ -60,12 +62,13 @@ void usb_com_start(COMConfig *cfg) {
 
     char buf[100];
     while (1) {
-        int n = read(fd, buf, sizeof(buf));
-        if (n > 0) {
-            printf("[USB-COM] Read %d bytes: ", n);
-            for (int i = 0; i < n; ++i) printf("%02X ", (unsigned char)buf[i]);
-            printf("\n");
+        int len = read(fd, buf, sizeof(buf));
+        if (len < 0) {
+            perror("[USB-COM] Read error");
+            continue;
         }
+        
+        forwarder_send(buf, len);
     }
 
     close(fd);
