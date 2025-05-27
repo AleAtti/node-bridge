@@ -15,7 +15,8 @@ static pthread_mutex_t client_lock = PTHREAD_MUTEX_INITIALIZER;
 static void *tcp_client_thread(void *arg)
 {
     TcpClientConfig *config = (TcpClientConfig *)arg;
-    if (!config) {
+    if (!config)
+    {
         fprintf(stderr, "[TCP-Client] Invalid configuration\n");
         return NULL;
     }
@@ -26,60 +27,75 @@ static void *tcp_client_thread(void *arg)
     int port = config->port;
     free(config);
 
-    printf("[TCP-Client] Starting TCP client thread for %s:%d\n", host, port);
-
-    pthread_mutex_lock(&client_lock);
-    client_fd = socket(AF_INET, SOCK_STREAM, 0);
-    pthread_mutex_unlock(&client_lock);
-
-    if (client_fd < 0) {
-        fprintf(stderr, "[TCP-Client] Socket creation failed: %s\n", strerror(errno));
-        return NULL;
-    }
-
-    struct sockaddr_in server_addr;
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(port);
-
-    if (inet_pton(AF_INET, host, &server_addr.sin_addr) <= 0) {
-        fprintf(stderr, "[TCP-Client] Invalid address: %s\n", strerror(errno));
-        close(client_fd);
-        return NULL;
-    }
-
-    if (connect(client_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        fprintf(stderr, "[TCP-Client] Connection failed: %s\n", strerror(errno));
-        close(client_fd);
-        return NULL;
-    }
-
-    printf("[TCP-Client] Connected to TCP server at %s:%d\n", host, port);
-
-    //!TODO: Implement data receiving and processing logic
-    int count = 0;
-    while (count < 5) 
+    while (1)
     {
-        const char *message = "NodeBridge!";
-        int bytes_sent = tcp_client_send(message, strlen(message));
-        if (bytes_sent < 0)
+
+        printf("[TCP-Client] Starting TCP client thread for %s:%d\n", host, port);
+
+        pthread_mutex_lock(&client_lock);
+        client_fd = socket(AF_INET, SOCK_STREAM, 0);
+        pthread_mutex_unlock(&client_lock);
+
+        if (client_fd < 0)
         {
-            perror("[TCP-Client] Error sending message");
+            fprintf(stderr, "[TCP-Client] Socket creation failed: %s\n", strerror(errno));
+            return NULL;
         }
-        else
+
+        struct sockaddr_in server_addr;
+        memset(&server_addr, 0, sizeof(server_addr));
+        server_addr.sin_family = AF_INET;
+        server_addr.sin_port = htons(port);
+
+        if (inet_pton(AF_INET, host, &server_addr.sin_addr) <= 0)
         {
-            printf("[TCP-Client] Sent %d bytes: %s\n", bytes_sent, message);
+            fprintf(stderr, "[TCP-Client] Invalid address: %s\n", strerror(errno));
+            close(client_fd);
+            return NULL;
         }
-        sleep(1); // Simulate some delay
-        count++;
+
+        if (connect(client_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+        {
+            fprintf(stderr, "[TCP-Client] Connection failed: %s\n", strerror(errno));
+            close(client_fd);
+            return NULL;
+        }
+
+        printf("[TCP-Client] Connected to TCP server at %s:%d\n", host, port);
+
+        char buf[256];
+        while (1)
+        {
+            int n = recv(client_fd, buf, sizeof(buf), 0);
+            if (n == 0)
+            {
+                printf("[TCP-Client] Server closed the connection\n");
+                break;
+            }
+            else if (n < 0)
+            {
+                perror("[TCP-Client] recv failed");
+                break;
+            }
+        }
+
+        pthread_mutex_lock(&client_lock);
+        close(client_fd);
+        client_fd = -1;
+        pthread_mutex_unlock(&client_lock);
+
+        printf("[TCP-Client] Connection closed, retrying in 5 seconds...\n");
+        sleep(5); // Wait before retrying connection
     }
-    
+
     return NULL;
 }
 
-void tcp_client_start(const char *host, int port) {
+void tcp_client_start(const char *host, int port)
+{
     TcpClientConfig *args = malloc(sizeof(TcpClientConfig));
-    if (!args) {
+    if (!args)
+    {
         perror("Memory allocation failed");
         return;
     }
@@ -91,9 +107,11 @@ void tcp_client_start(const char *host, int port) {
     pthread_detach(tid);
 }
 
-void tcp_client_stop() {
+void tcp_client_stop()
+{
     pthread_mutex_lock(&client_lock);
-    if (client_fd >= 0) {
+    if (client_fd >= 0)
+    {
         close(client_fd);
         client_fd = -1;
         printf("[TCP-Client] Connection closed\n");
@@ -101,10 +119,12 @@ void tcp_client_stop() {
     pthread_mutex_unlock(&client_lock);
 }
 
-int tcp_client_send(const void *data, size_t len) {
+int tcp_client_send(const void *data, size_t len)
+{
     int sent = 0;
     pthread_mutex_lock(&client_lock);
-    if (client_fd >= 0) {
+    if (client_fd >= 0)
+    {
         sent = send(client_fd, data, len, 0);
     }
     pthread_mutex_unlock(&client_lock);
