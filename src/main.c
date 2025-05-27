@@ -11,6 +11,7 @@
 #include "usb_com.h"
 #include "tcp_server.h"
 #include "tcp_client.h"
+#include "forwarder.h"
 
 
 void *hid_thread(void *arg)
@@ -66,6 +67,9 @@ int main(int argc, char **argv)
 {
     Config cfg = load_config("config.json");
     print_config(&cfg);
+
+    forwarder_init(&cfg);
+
     pthread_t hid_t, com_t;
     if (cfg.General.use_hid && !cfg.General.use_com)
     {
@@ -80,16 +84,7 @@ int main(int argc, char **argv)
         pthread_create(&com_t, NULL, com_thread, &cfg.UsbCom);
     }
 
-    if (strcmp(cfg.Tcp.mode, "server") == 0)
-    {
-        printf("\n[TCP Server] Starting on port %d\n", cfg.Tcp.port);
-        tcp_server_start(cfg.Tcp.port);
-    }
-    else if (strcmp(cfg.Tcp.mode, "client") == 0)
-    {
-        printf("\n[TCP Client] Connecting to %s:%d\n", cfg.Tcp.host, cfg.Tcp.port);
-        tcp_client_start(cfg.Tcp.host, cfg.Tcp.port);
-    }
+    
    
     
 
