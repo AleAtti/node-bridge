@@ -3,6 +3,7 @@
 #include <wchar.h>
 #include <hidapi/hidapi.h>
 #include "usb_hid.h"
+#include "forwarder.h"
 
 void usb_hid_start(HIDConfig *cfg) {
     if (hid_init()) {
@@ -18,40 +19,13 @@ void usb_hid_start(HIDConfig *cfg) {
 
     unsigned char buf[64];
     while (1) {
-        int res = hid_read(dev, buf, sizeof(buf));
-        if (res > 0) {
-            printf("[USB-HID] Read %d bytes: ", res);
-            for (int i = 0; i < res; ++i) printf("%02X ", buf[i]);
-            printf("\n");
-        }
+        int len = hid_read(dev, buf, sizeof(buf));
+        forwarder_send(buf, len);
     }
 
     hid_close(dev);
     hid_exit();
 }
-
-// int list_usb_devices(void)
-// {
-// 	libusb_device **devs;
-// 	int r;
-// 	ssize_t cnt;
-
-// 	r = libusb_init_context(/*ctx=*/NULL, /*options=*/NULL, /*num_options=*/0);
-// 	if (r < 0)
-// 		return r;
-
-// 	cnt = libusb_get_device_list(NULL, &devs);
-// 	if (cnt < 0){
-// 		libusb_exit(NULL);
-// 		return (int) cnt;
-// 	}
-
-// 	print_devs(devs);
-// 	libusb_free_device_list(devs, 1);
-
-// 	libusb_exit(NULL);
-// 	return 0;
-// }
 
 int list_usb_devices(void)
 {
