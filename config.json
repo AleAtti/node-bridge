@@ -2,8 +2,8 @@
     "general": {
         "hostname": "Node_bridge",
         "version": "1.0.0",
-        "use_com": 0,
-        "use_hid": 1
+        "use_com": 1,
+        "use_hid": 0
     },
     "webserver": {
         "port": 8080,
@@ -13,6 +13,10 @@
         "mode": "server",
         "port": 9000,
         "host": "192.168.178.67"
+    },
+    "forwarder":{
+        "use_interval": 1, // (1 = true, 0 = false)
+        "interval_ms": 1000 // Interval in milliseconds
     },
     "wifi": {
         "ssid": "YourSSID",
@@ -27,7 +31,7 @@
         "dns": "8.8.4.4"
     },
     "usb_com": {
-        "port": "/dev/ttyUSB0",
+        "port": "/dev/ttyACM0",
         "baudrate": 9600,
         "databits": 8,
         "stopbits": 1,

@@ -35,6 +35,12 @@ typedef struct config
         char host[64];
     } Tcp;
 
+    struct fwd
+    {
+        int use_interval;
+        int interval_ms;
+    } Forwarder;
+
     struct wifi
     {
         char ssid[256];

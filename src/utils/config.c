@@ -123,6 +123,18 @@ Config load_config(const char *filename)
 		cfg.UsbHid.endpoint = cJSON_GetObjectItem(hid, "endpoint")->valueint;
 	}
 
+	cJSON *fwd = cJSON_GetObjectItem(root, "forwarder");
+	if (fwd)
+	{
+		cJSON *use_interval = cJSON_GetObjectItem(fwd, "use_interval");
+		if (cJSON_IsNumber(use_interval))
+			cfg.Forwarder.use_interval = use_interval->valueint;
+
+		cJSON *interval_ms = cJSON_GetObjectItem(fwd, "interval_ms");
+		if (cJSON_IsNumber(interval_ms))
+			cfg.Forwarder.interval_ms = interval_ms->valueint;
+	}
+
 	cJSON_Delete(root);
 	free(data);
 	return cfg;
