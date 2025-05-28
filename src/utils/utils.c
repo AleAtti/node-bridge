@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdint.h>
 #include "utils.h"
 
 char *toLowerCase(const char *str) {
@@ -86,5 +87,30 @@ int save_file(const char* path, const char* data, size_t size) {
         return -1;
     }
     fclose(file);
+    return 0;
+}
+
+char hid_to_ascii(uint8_t code, int shift)
+{
+    // HID usage IDs → ASCII mapping (US QWERTY layout)
+    const char ascii[] = {
+        0, 0, 0, 0, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+        'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '1', '2',
+        '3', '4', '5', '6', '7', '8', '9', '0', '\n', 0, 0, '\t', ' ', '-', '=',
+        '[', ']', '\\', '#', ';', '\'', '`', ',', '.', '/', 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    const char shift_ascii[] = {
+        0, 0, 0, 0, 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+        'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '!', '@',
+        '#', '$', '%', '^', '&', '*', '(', ')', '\n', 0, 0, '\t', ' ', '_', '+',
+        '{', '}', '|', '~', ':', '"', '~', '<', '>', '?', 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    if (code < sizeof(ascii))
+        return shift ? shift_ascii[code] : ascii[code];
+
     return 0;
 }
