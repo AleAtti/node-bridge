@@ -18,13 +18,11 @@ Config load_config(const char *filename)
 
 	cJSON *root = cJSON_Parse(data);
 	if (!root)
+	{
+		fprintf(stderr, "[Config] Invalid JSON format!\n");
+		free(data);
 		return cfg;
-
-	// cfg.use_com = cJSON_GetObjectItem(root, "use_com")->valueint;
-	// cfg.use_hid = cJSON_GetObjectItem(root, "use_hid")->valueint;
-	// strcpy(cfg.tcp_mode, cJSON_GetObjectItem(root, "tcp_mode")->valuestring);
-	// cfg.tcp_port = cJSON_GetObjectItem(root, "tcp_port")->valueint;
-	// strcpy(cfg.tcp_host, cJSON_GetObjectItem(root, "tcp_host")->valuestring);
+	}
 
 	cJSON *general = cJSON_GetObjectItem(root, "general");
 	if (general)
