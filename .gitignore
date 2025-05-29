@@ -1,6 +1,7 @@
 # Ignore object files and executables
 *.o
 nodebridge
+*.json
 
 #otpional
 *.tmp
