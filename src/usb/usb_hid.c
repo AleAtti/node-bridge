@@ -7,8 +7,10 @@
 #include "forwarder.h"
 #include "utils.h"
 
-void usb_hid_start(HIDConfig *cfg) {
-    if (hid_init()) {
+void usb_hid_start(HIDConfig *cfg)
+{
+    if (hid_init())
+    {
         fprintf(stderr, "[USB-HID] Initialization failed\n");
         return;
     }
@@ -21,6 +23,8 @@ void usb_hid_start(HIDConfig *cfg) {
     }
 
     unsigned char buf[8];
+    unsigned char internal_buffer[256];
+    size_t buf_index = 0;
 
     while (1)
     {
@@ -34,19 +38,37 @@ void usb_hid_start(HIDConfig *cfg) {
             // }
             // printf("\n");
             int shift = buf[1] & (0x02 | 0x20); // Left (0x02) or Right Shift (0x20)
-            // printf("[DEBUG] Modifier Byte: %02X\n", buf[0]);
-            // printf("[DEBUG] Shift : %s\n", shift ? "ON" : "OFF");
+
             for (int i = 2; i < 8; i++)
             {
                 if (buf[i] != 0)
                 {
-                    char c = hid_to_ascii(buf[i], shift, cfg->keyboard_layout);
-                    if (c)
+                    char *str = hid_to_ascii(buf[i], shift, cfg->keyboard_layout);
+
+                    if (str || str[0] != '\0')
                     {
-                        //putchar(c);
-                        char data[2] = {c, '\0'};
-                        forwarder_send(data, strlen(data));
-                        fflush(stdout); // flush output immediately
+                        for (size_t i = 0; i < str[i] != '\0'; i++)
+                        {
+                            if (buf_index < 256 - 1)
+                            {
+                                internal_buffer[buf_index++] = str[i];
+                            }else
+                            {
+                                fprintf(stderr, "[USB-HID] Buffer overflow, resetting buffer\n");
+                                internal_buffer[buf_index] = '\0'; 
+                                forwarder_send((unsigned char *)internal_buffer, buf_index);
+                                buf_index = 0; 
+                            }
+
+                            if (str[i] == '\n' || str[i] == '\r')
+                            {
+                                internal_buffer[buf_index] = '\0'; // Null-terminate the string
+                                printf("[USB-HID] Sending: %s\n", internal_buffer);
+                                forwarder_send((unsigned char *)internal_buffer, buf_index);
+                                buf_index = 0; // Reset buffer index after sending
+                            }
+                            
+                        }
                     }
                 }
             }
