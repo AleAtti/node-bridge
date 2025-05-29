@@ -29,17 +29,15 @@ Config load_config(const char *filename)
 	{
 		cJSON *hn = cJSON_GetObjectItem(general, "hostname");
 		cJSON *ver = cJSON_GetObjectItem(general, "version");
-		cJSON *use_com = cJSON_GetObjectItem(general, "use_com");
-		cJSON *use_hid = cJSON_GetObjectItem(general, "use_hid");
+		
+		
 
 		if (cJSON_IsString(hn))
 			strncpy(cfg.General.hostname, hn->valuestring, sizeof(cfg.General.hostname));
 		if (cJSON_IsString(ver))
 			strncpy(cfg.General.version, ver->valuestring, sizeof(cfg.General.version));
-		if (cJSON_IsNumber(use_com))
-			cfg.General.use_com = use_com->valueint;
-		if (cJSON_IsNumber(use_hid))
-			cfg.General.use_hid = use_hid->valueint;
+		
+		
 	}
 
 	cJSON *webserver = cJSON_GetObjectItem(root, "webserver");
@@ -78,11 +76,16 @@ Config load_config(const char *filename)
 	cJSON *com = cJSON_GetObjectItem(root, "usb_com");
 	if (com)
 	{
+		cJSON *use_com = cJSON_GetObjectItem(general, "use_com");
 		cJSON *port = cJSON_GetObjectItem(com, "port");
 		cJSON *baud = cJSON_GetObjectItem(com, "baudrate");
 		cJSON *data = cJSON_GetObjectItem(com, "databits");
 		cJSON *stop = cJSON_GetObjectItem(com, "stopbits");
 		cJSON *parity = cJSON_GetObjectItem(com, "parity");
+
+		if (cJSON_IsNumber(use_com)){
+			cfg.UsbCom.use_com = use_com->valueint;
+		}
 
 		if (cJSON_IsString(port))
 		{
@@ -111,8 +114,26 @@ Config load_config(const char *filename)
 	cJSON *hid = cJSON_GetObjectItem(root, "usb_hid");
 	if (hid)
 	{
+		cJSON *use_hid = cJSON_GetObjectItem(general, "use_hid");
 		cJSON *vid_json = cJSON_GetObjectItem(hid, "vid");
 		cJSON *pid_json = cJSON_GetObjectItem(hid, "pid");
+
+		const char *layout_str = cJSON_GetObjectItem(hid, "keyboard_layout")->valuestring;
+		if (strcmp(layout_str, "us") == 0){
+			cfg.UsbHid.keyboard_layout = LAYOUT_US;
+		}else if (strcmp(layout_str, "de") == 0){
+			cfg.UsbHid.keyboard_layout = LAYOUT_DE;
+		}
+		else{
+			fprintf(stderr, "[Config] usb_hid.keyboard_layout invalid, defaulting to US layout\n");
+			fprintf(stderr, "[Config] USB HID keyboard layout must be either 'us' or 'de'\n");
+			cfg.UsbHid.keyboard_layout = LAYOUT_US;
+		}
+
+		if (cJSON_IsNumber(use_hid)){
+			cfg.UsbHid.use_hid = use_hid->valueint;
+		}
+
 		if (cJSON_IsString(vid_json) && cJSON_IsString(pid_json))
 		{
 			cfg.UsbHid.vid = (int)strtol(vid_json->valuestring, NULL, 16); // Convert hex string to int

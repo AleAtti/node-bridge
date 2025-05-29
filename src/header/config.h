@@ -1,12 +1,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-
+#include "keyboard_layout.h"
 typedef struct config
 {
     struct general
     {
-        int use_com;
-        int use_hid;
+        
         char hostname[64];
         char version[16];
     } General;
@@ -59,6 +58,7 @@ typedef struct config
 
     struct usb_com
     {
+        int use_com;
         char port[64];
         int baudrate;
         int databits;
@@ -68,9 +68,11 @@ typedef struct config
 
     struct usb_hid
     {
+        int use_hid;
         int vid;
         int pid;
         int endpoint;
+        KeyboardLayout keyboard_layout; 
     } UsbHid;
 
 } Config;
