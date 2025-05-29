@@ -11,6 +11,13 @@ char hid_to_ascii(uint8_t code, int shift, KeyboardLayout layout)
             return shift ? shift_ascii[code] : ascii[code];
     }
     else if (layout == LAYOUT_US)
+    { // US layout
+        const char *ascii = ascii_us;
+        const char *shift_ascii = shift_ascii_us;
+        if (code < sizeof(ascii))
+            return shift ? shift_ascii[code] : ascii[code];
+    }
+    else
     { // Default to US layout
         const char *ascii = ascii_us;
         const char *shift_ascii = shift_ascii_us;
