@@ -2,35 +2,19 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="../css/style.css">
   <title>NodeBridge Configuration</title>
 </head>
 <body>
 
   <h1>NodeBridge Configuration</h1>
-  <form id="configForm">
-
     <section class="section">
       <h3>General Settings</h3>
       <label>Device Hostname</label>
-      <input type="text" id="hostname">
-      <label><input type="checkbox" id="usbComCheckbox"> USB-COM</label>
-      <label><input type="checkbox" id="usbHidCheckbox"> USB-HID</label>
+      <input type="text" id="generalHostname" placeholder="Enter device hostname">
+      <button type="submit">Apply Deivce Settings</button>
+      
     </section>
-
-    <section class="section">
-      <h3>TCP Settings</h3>
-      <label>Mode:
-        <input type="text" id="tcpMode">
-      </label>
-      <label>Port:
-        <input type="number" id="tcpPort">
-      </label>
-      <label>Host:
-        <input type="text" id="tcpHost">
-      </label>
-    </section>
-
     <section class="section">
       <h3>Wi-Fi Settings</h3>
       <label>SSID:
@@ -39,7 +23,15 @@
       <label>Password:
         <input type="password" id="wifiPassword">
       </label>
-      <label>Static IP:
+      <label><input type="checkbox" id="wifDhcpCheckbox" onchange="isDhcpChecked()">Enable DHCP</label>
+      <!-- <label>Security:
+        <select id="wifiSecurity">
+          <option value="WPA2">WPA2</option>
+          <option value="WPA3">WPA3</option>
+          <option value="Open">Open</option>
+        </select> -->
+      <div id="wifiStaticSettings">
+        <label>Static IP:
         <input type="text" id="wifiIp">
       </label>
       <label>Gateway:
@@ -48,6 +40,7 @@
       <label>DNS:
         <input type="text" id="wifiDns">
       </label>
+      </div>
     </section>
 
     <section class="section">
@@ -63,8 +56,43 @@
       </label>
     </section>
 
+        <section class="section">
+      <h3>Webserver Settings</h3>
+      <label>Port:
+        <input type="number" id="webserverPort">
+      </label>
+      <label>Host:
+        <input type="text" id="webserverHost">
+      </label>
+    </section>
+
+     <section class="section">
+      <h3>TCP Settings</h3>
+      <label>Mode:
+        <input type="text" id="tcpMode">
+      </label>
+      <label>Port:
+        <input type="number" id="tcpPort">
+      </label>
+      <label>Host:
+        <input type="text" id="tcpHost">
+      </label>
+       <label><input type="checkbox" id="fwdUseIntefvalCheckbox" onchange="isIntervalChecked()">Enable forward Interval</label>
+      <div id="tcpForwardSettings">
+        <label>Interval (ms):
+          <input type="number" id="fwdIntervalMs">
+        </label>
+      <div>
+   
+      </div>
+
+    </section>
+
+   
+
     <section class="section">
       <h3>USB-COM Settings</h3>
+      <label><input type="checkbox" id="usbComCheckbox"> USB-COM</label>
       <label>Port:
         <input type="text" id="usbComPort">
       </label>
@@ -84,14 +112,18 @@
 
     <section class="section">
       <h3>USB-HID Settings</h3>
+      <label><input type="checkbox" id="usbHidCheckbox"> USB-HID</label>
       <label>VID:
-        <input type="number" id="usbHidVid">
+        <input type="text" id="usbHidVid">
       </label>
       <label>PID:
-        <input type="number" id="usbHidPid">
+        <input type="text" id="usbHidPid">
       </label>
       <label>Endpoint:
         <input type="number" id="usbHidEndpoint">
+      </label>
+      <label>Keyboard Layout:
+        <input type="text" id="usbHidKeyboardLayout">
       </label>
     </section>
 
@@ -100,10 +132,10 @@
       <textarea readonly id="configText"></textarea>
     </section>
 
-    <button type="submit">Save Configuration</button>
-  </form>
+    <button type="button" onclick="saveButtonClick()">Save Configuration</button>
+    <button type="button" onclick="rebootButtonClick()">Reboot Device</button>
 
-  <script src="/scripts/script.js"></script>
+  <script src="../scripts/script.js"></script>
 </body>
 </html>
 </html>
