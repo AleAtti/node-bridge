@@ -2,14 +2,12 @@
 
 ## TODO
 - Improve Webserver
-- Add TCP Server / Clien
-- Add USB HID / COM
 - Add Logs
 - Improve Config Frontend
 - make it more robust.
 
 **NodeBridge** is a lightweight I/O utility designed to connect USB devices—such as handheld scanners or other peripherals—to a network.
-It receives input via **USB-HID** or **USB-COM** and transmits the data over **TCP/IP**, acting as a smart bridge between local hardware and remote systems.
+It receives input via **USB-HID** or **USB-COM** and transmits the data over **TCP/IP**, acting as a usb bridge between local hardware and remote systems.
 
 ---
 
@@ -35,6 +33,9 @@ nodebridge/
 ```
 
 ## Required packages I have installed on my Raspberry Pi
+```bash
+$ sudo apt-get install build-essential git gdb libcjson-dev libmicrohttpd-dev libhidapi-dev
+```
 - libcjson-dev 
 - libusb-1.0-0-dev 
 - libmicrohttpd-dev
