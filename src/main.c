@@ -3,7 +3,6 @@
 #include <pthread.h>
 #include <string.h>
 
-
 #include "utils.h"
 #include "config.h"
 #include "webserver.h"
@@ -12,7 +11,6 @@
 #include "tcp_server.h"
 #include "tcp_client.h"
 #include "forwarder.h"
-
 
 void *hid_thread(void *arg)
 {
@@ -31,8 +29,6 @@ void print_config(const Config *cfg)
     printf("=== NodeBridge Config ===\n");
     printf("use_com: %s\n", cfg->General.version);
     printf("use_hid: %s\n", cfg->General.hostname);
-    printf("use_com: %d\n", cfg->General.use_com);
-    printf("use_hid: %d\n", cfg->General.use_hid);
     printf("tcp_mode: %s\n", cfg->Tcp.mode);
     printf("tcp_port: %d\n", cfg->Tcp.port);
     printf("tcp_host: %s\n", cfg->Tcp.host);
@@ -50,6 +46,7 @@ void print_config(const Config *cfg)
     printf("dns: %s\n", cfg->Lan.dns);
 
     printf("\n[USB-COM]\n");
+    printf("use_com: %d\n", cfg->UsbCom.use_com);
     printf("port: %s\n", cfg->UsbCom.port);
     printf("baudrate: %d\n", cfg->UsbCom.baudrate);
     printf("databits: %d\n", cfg->UsbCom.databits);
@@ -57,11 +54,12 @@ void print_config(const Config *cfg)
     printf("parity: %s\n", cfg->UsbCom.parity);
 
     printf("\n[USB-HID]\n");
-    printf("VID: %d\n", cfg->UsbHid.vid);
-    printf("PID: %d\n", cfg->UsbHid.pid);
+    printf("use_hid: %d\n", cfg->UsbHid.use_hid);
+    printf("VID: %04x (%d)\n", cfg->UsbHid.vid, cfg->UsbHid.vid);
+    printf("PID: %04x (%d)\n", cfg->UsbHid.pid, cfg->UsbHid.pid);
     printf("Endpoint: %d\n", cfg->UsbHid.endpoint);
+    printf("Layout: %s\n", cfg->UsbHid.keyboard_layout == LAYOUT_DE ? "de" : "us");
 }
-
 
 int main(int argc, char **argv)
 {
@@ -71,22 +69,20 @@ int main(int argc, char **argv)
     forwarder_init(&cfg);
 
     pthread_t hid_t, com_t;
-    if (cfg.General.use_hid && !cfg.General.use_com)
+
+    if (cfg.UsbHid.use_hid && !cfg.UsbCom.use_com)
     {
+
         printf("\n[USB-HID] Starting...\n");
         list_usb_devices();
         pthread_create(&hid_t, NULL, hid_thread, &cfg.UsbHid);
     }
-    else if (!cfg.General.use_hid && cfg.General.use_com)
+    else if (!cfg.UsbHid.use_hid && cfg.UsbCom.use_com)
     {
         printf("[USB-COM] Starting...\n");
         printf("[DEBUG] Port: %s\n", cfg.UsbCom.port);
         pthread_create(&com_t, NULL, com_thread, &cfg.UsbCom);
     }
-
-    
-   
-    
 
     printf("\n[WebServer] Starting on %s:%d\n", cfg.Webserver.host, cfg.Webserver.port);
     start_webserver(cfg.Webserver.port);
