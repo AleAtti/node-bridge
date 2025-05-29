@@ -2,6 +2,7 @@
 #define USB_COM_H
 
 typedef struct {
+    int use_com;
     char port[64];
     int baudrate;
     int databits;

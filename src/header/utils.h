@@ -61,6 +61,4 @@ int save_to_file(const char* path, const char* data);
 
 int save_file(const char* path, const char* data, size_t size);
 
-char hid_to_ascii(uint8_t c, int shift);
-
 #endif

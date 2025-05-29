@@ -10,11 +10,13 @@
 
 #ifndef USB_HID_H
 #define USB_HID_H
-
+#include "keyboard_layout.h"
 typedef struct {
+    int use_hid;
     int vid;
     int pid;
     int endpoint;
+    KeyboardLayout keyboard_layout; 
 } HIDConfig;
 
 void usb_hid_start(HIDConfig *cfg);
