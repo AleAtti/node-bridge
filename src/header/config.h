@@ -46,6 +46,7 @@ typedef struct config
         char static_ip[32];
         char gateway[32];
         char dns[32];
+        int use_dhcp;
     } Wifi;
 
     struct lan
@@ -77,5 +78,6 @@ typedef struct config
 } Config;
 
 Config load_config(const char *filename);
+void print_config(const Config *cfg);
 
 #endif

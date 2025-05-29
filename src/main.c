@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <string.h>
+#include <unistd.h>
+#include <pthread.h>
 
 #include "utils.h"
 #include "config.h"
@@ -24,43 +25,6 @@ void *com_thread(void *arg)
     return NULL;
 }
 
-void print_config(const Config *cfg)
-{
-    printf("=== NodeBridge Config ===\n");
-    printf("use_com: %s\n", cfg->General.version);
-    printf("use_hid: %s\n", cfg->General.hostname);
-    printf("tcp_mode: %s\n", cfg->Tcp.mode);
-    printf("tcp_port: %d\n", cfg->Tcp.port);
-    printf("tcp_host: %s\n", cfg->Tcp.host);
-
-    printf("\n[Wi-Fi]\n");
-    printf("ssid: %s\n", cfg->Wifi.ssid);
-    printf("password: %s\n", cfg->Wifi.password);
-    printf("static_ip: %s\n", cfg->Wifi.static_ip);
-    printf("gateway: %s\n", cfg->Wifi.gateway);
-    printf("dns: %s\n", cfg->Wifi.dns);
-
-    printf("\n[Lan]\n");
-    printf("static_ip: %s\n", cfg->Lan.static_ip);
-    printf("gateway: %s\n", cfg->Lan.gateway);
-    printf("dns: %s\n", cfg->Lan.dns);
-
-    printf("\n[USB-COM]\n");
-    printf("use_com: %d\n", cfg->UsbCom.use_com);
-    printf("port: %s\n", cfg->UsbCom.port);
-    printf("baudrate: %d\n", cfg->UsbCom.baudrate);
-    printf("databits: %d\n", cfg->UsbCom.databits);
-    printf("stopbits: %d\n", cfg->UsbCom.stopbits);
-    printf("parity: %s\n", cfg->UsbCom.parity);
-
-    printf("\n[USB-HID]\n");
-    printf("use_hid: %d\n", cfg->UsbHid.use_hid);
-    printf("VID: %04x (%d)\n", cfg->UsbHid.vid, cfg->UsbHid.vid);
-    printf("PID: %04x (%d)\n", cfg->UsbHid.pid, cfg->UsbHid.pid);
-    printf("Endpoint: %d\n", cfg->UsbHid.endpoint);
-    printf("Layout: %s\n", cfg->UsbHid.keyboard_layout == LAYOUT_DE ? "de" : "us");
-}
-
 int main(int argc, char **argv)
 {
     Config cfg = load_config("config.json");
@@ -68,17 +32,16 @@ int main(int argc, char **argv)
 
     forwarder_init(&cfg);
 
-    pthread_t hid_t, com_t;
-
     if (cfg.UsbHid.use_hid && !cfg.UsbCom.use_com)
     {
-
+        pthread_t hid_t;
         printf("\n[USB-HID] Starting...\n");
         list_usb_devices();
         pthread_create(&hid_t, NULL, hid_thread, &cfg.UsbHid);
     }
     else if (!cfg.UsbHid.use_hid && cfg.UsbCom.use_com)
     {
+        pthread_t com_t;
         printf("[USB-COM] Starting...\n");
         printf("[DEBUG] Port: %s\n", cfg.UsbCom.port);
         pthread_create(&com_t, NULL, com_thread, &cfg.UsbCom);

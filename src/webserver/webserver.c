@@ -12,6 +12,17 @@ Resources:  https://www.gnu.org/software/libmicrohttpd/manual/libmicrohttpd.html
 #include <string.h>
 #include <microhttpd.h>
 #include <cjson/cJSON.h>
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+
+
+
 #include "utils.h"
 #include "config.h"
 #include "mime.h"
@@ -33,7 +44,7 @@ static enum MHD_Result handle_get_config(struct MHD_Connection *connection)
         data = strdup("{}");
 
     struct MHD_Response *response = MHD_create_response_from_buffer(strlen(data), data, MHD_RESPMEM_MUST_FREE);
-    MHD_add_response_header(response, "Content-Type", "application/json");
+    MHD_add_response_header(response, "Content-Type", "application/json ;charset=UTF-8");
     return MHD_queue_response(connection, MHD_HTTP_OK, response);
 }
 
@@ -62,6 +73,10 @@ static enum MHD_Result handle_set_config(struct MHD_Connection *connection,
     }
 
     save_file("config.json", pd->data, pd->size);
+
+    Config cfg = load_config("config.json");
+    apply_device_settings(&cfg);
+
     free(pd->data);
     free(pd);
     *con_cls = NULL;
@@ -79,7 +94,7 @@ static enum MHD_Result handle_reboot(struct MHD_Connection *connection)
     MHD_queue_response(connection, MHD_HTTP_OK, response);
 
     // Reboot the system or restart the service
-    // system("sudo reboot");
+    system("sudo reboot");
 
     return MHD_YES;
 }
@@ -147,6 +162,30 @@ static enum MHD_Result answer_to_connection(void *cls,
     }
 }
 
+char *get_webserver_url(const int server_port)
+{
+    static char url[128];
+
+    int fd;
+    struct ifreq ifr;
+
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    /* I want to get an IPv4 IP address */
+    ifr.ifr_addr.sa_family = AF_INET;
+
+    /* I want IP address attached to "eth0" */
+    strncpy(ifr.ifr_name, "eth0", IFNAMSIZ - 1);
+
+    ioctl(fd, SIOCGIFADDR, &ifr);
+
+    close(fd);
+
+    char* ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+    snprintf(url, sizeof(url), "http://%s:%d", ip_address, server_port);
+    return url;
+}
+
 int start_webserver(int server_port)
 {
     struct MHD_Daemon *daemon;
@@ -160,7 +199,7 @@ int start_webserver(int server_port)
         return 1;
     }
 
-    printf("Server running on http://localhost:%d\n", server_port);
+    printf("Server running on %s\n", get_webserver_url(server_port));
     pause(); // Wait for CTRl+C to exit
 
     MHD_stop_daemon(daemon);

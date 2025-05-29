@@ -26,7 +26,7 @@
  * Output:  Returns the specified value if the condition is false.
  */
 #define assert_return(expr, return_value) do { \
-    if (!(expr) || (expr) == (return_value)) { \
+    if (!(expr)) { \
         fprintf(stderr, ASSERT_MSG, #expr, __func__, __FILE__, __LINE__); \
         return return_value; \
     } \

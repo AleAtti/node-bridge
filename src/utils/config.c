@@ -63,6 +63,11 @@ Config load_config(const char *filename)
 		strcpy(cfg.Wifi.static_ip, cJSON_GetObjectItem(wifi, "static_ip")->valuestring);
 		strcpy(cfg.Wifi.gateway, cJSON_GetObjectItem(wifi, "gateway")->valuestring);
 		strcpy(cfg.Wifi.dns, cJSON_GetObjectItem(wifi, "dns")->valuestring);
+		cJSON *use_dhcp = cJSON_GetObjectItem(wifi, "use_dhcp");
+		if (cJSON_IsNumber(use_dhcp))
+		{
+			cfg.Wifi.use_dhcp = use_dhcp->valueint;
+		}
 	}
 
 	cJSON *lan = cJSON_GetObjectItem(root, "lan");
@@ -157,6 +162,55 @@ Config load_config(const char *filename)
 	cJSON_Delete(root);
 	free(data);
 	return cfg;
+}
+
+void print_config(const Config *cfg)
+{
+    printf("=== NodeBridge Config ===\n");
+    printf("verision: %s\n", cfg->General.version);
+    printf("hostname: %s\n", cfg->General.hostname);
+
+    printf("\n[WebServer]\n");
+    printf("host: %s\n", cfg->Webserver.host);
+    printf("port: %d\n", cfg->Webserver.port);
+
+    printf("\n[TCP]\n");
+    printf("tcp_mode: %s\n", cfg->Tcp.mode);
+    printf("tcp_port: %d\n", cfg->Tcp.port);
+    printf("tcp_host: %s\n", cfg->Tcp.host);
+
+    printf("\n[Wi-Fi]\n");
+    printf("ssid: %s\n", cfg->Wifi.ssid);
+    printf("password: %s\n", cfg->Wifi.password);
+    printf("static_ip: %s\n", cfg->Wifi.static_ip);
+    printf("gateway: %s\n", cfg->Wifi.gateway);
+    printf("dns: %s\n", cfg->Wifi.dns);
+    printf("use_dhcp: %d\n", cfg->Wifi.use_dhcp);
+
+    printf("\n[Lan]\n");
+    printf("static_ip: %s\n", cfg->Lan.static_ip);
+    printf("gateway: %s\n", cfg->Lan.gateway);
+    printf("dns: %s\n", cfg->Lan.dns);
+
+    printf("\n[USB-COM]\n");
+    printf("use_com: %d\n", cfg->UsbCom.use_com);
+    printf("port: %s\n", cfg->UsbCom.port);
+    printf("baudrate: %d\n", cfg->UsbCom.baudrate);
+    printf("databits: %d\n", cfg->UsbCom.databits);
+    printf("stopbits: %d\n", cfg->UsbCom.stopbits);
+    printf("parity: %s\n", cfg->UsbCom.parity);
+
+    printf("\n[USB-HID]\n");
+    printf("use_hid: %d\n", cfg->UsbHid.use_hid);
+    printf("VID: %04x (%d)\n", cfg->UsbHid.vid, cfg->UsbHid.vid);
+    printf("PID: %04x (%d)\n", cfg->UsbHid.pid, cfg->UsbHid.pid);
+    printf("Endpoint: %d\n", cfg->UsbHid.endpoint);
+    printf("Layout: %s\n", cfg->UsbHid.keyboard_layout == LAYOUT_DE ? "de" : "us");
+
+    printf("\n[Forwarder]\n");
+    printf("use_interval: %d\n", cfg->Forwarder.use_interval);
+    printf("interval_ms: %d\n", cfg->Forwarder.interval_ms);
+    printf("=========================\n");
 }
 
 //! TODO: Implement save_config function

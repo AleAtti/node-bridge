@@ -54,12 +54,13 @@ void usb_hid_start(HIDConfig *cfg)
                                 internal_buffer[buf_index++] = str[i];
                             }else
                             {
+                                //!TODO: create a function to handle buffer
                                 fprintf(stderr, "[USB-HID] Buffer overflow, resetting buffer\n");
                                 internal_buffer[buf_index] = '\0'; 
                                 forwarder_send((unsigned char *)internal_buffer, buf_index);
                                 buf_index = 0; 
                             }
-
+                            //!TODO: add prefix and suffix to the string
                             if (str[i] == '\n' || str[i] == '\r')
                             {
                                 internal_buffer[buf_index] = '\0'; // Null-terminate the string
