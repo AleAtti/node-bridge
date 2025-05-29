@@ -5,7 +5,6 @@ typedef struct config
 {
     struct general
     {
-        
         char hostname[64];
         char version[16];
     } General;

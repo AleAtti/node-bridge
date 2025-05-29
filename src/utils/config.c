@@ -76,7 +76,7 @@ Config load_config(const char *filename)
 	cJSON *com = cJSON_GetObjectItem(root, "usb_com");
 	if (com)
 	{
-		cJSON *use_com = cJSON_GetObjectItem(general, "use_com");
+		cJSON *use_com = cJSON_GetObjectItem(com, "use_com");
 		cJSON *port = cJSON_GetObjectItem(com, "port");
 		cJSON *baud = cJSON_GetObjectItem(com, "baudrate");
 		cJSON *data = cJSON_GetObjectItem(com, "databits");
@@ -114,7 +114,7 @@ Config load_config(const char *filename)
 	cJSON *hid = cJSON_GetObjectItem(root, "usb_hid");
 	if (hid)
 	{
-		cJSON *use_hid = cJSON_GetObjectItem(general, "use_hid");
+		cJSON *use_hid = cJSON_GetObjectItem(hid, "use_hid");
 		cJSON *vid_json = cJSON_GetObjectItem(hid, "vid");
 		cJSON *pid_json = cJSON_GetObjectItem(hid, "pid");
 
