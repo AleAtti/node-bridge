@@ -40,7 +40,7 @@ void usb_hid_start(HIDConfig *cfg) {
             {
                 if (buf[i] != 0)
                 {
-                    char c = hid_to_ascii(buf[i], shift);
+                    char c = hid_to_ascii(buf[i], shift, cfg->keyboard_layout);
                     if (c)
                     {
                         //putchar(c);
