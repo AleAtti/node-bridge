@@ -78,6 +78,7 @@ typedef struct config
 } Config;
 
 Config load_config(const char *filename);
+int secure_config_and_save(const char *raw_json, const char *path);
 void print_config(const Config *cfg);
 
 #endif

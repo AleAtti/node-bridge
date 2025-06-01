@@ -1,9 +1,12 @@
-#include "config.h"
-#include "utils.h"
-#include <cjson/cJSON.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cjson/cJSON.h>
+#include <unistd.h>
+
+#include "config.h"
+#include "utils.h"
+#include "crypto.h"
 
 Config load_config(const char *filename)
 {
@@ -29,15 +32,11 @@ Config load_config(const char *filename)
 	{
 		cJSON *hn = cJSON_GetObjectItem(general, "hostname");
 		cJSON *ver = cJSON_GetObjectItem(general, "version");
-		
-		
 
 		if (cJSON_IsString(hn))
 			strncpy(cfg.General.hostname, hn->valuestring, sizeof(cfg.General.hostname));
 		if (cJSON_IsString(ver))
 			strncpy(cfg.General.version, ver->valuestring, sizeof(cfg.General.version));
-		
-		
 	}
 
 	cJSON *webserver = cJSON_GetObjectItem(root, "webserver");
@@ -88,7 +87,8 @@ Config load_config(const char *filename)
 		cJSON *stop = cJSON_GetObjectItem(com, "stopbits");
 		cJSON *parity = cJSON_GetObjectItem(com, "parity");
 
-		if (cJSON_IsNumber(use_com)){
+		if (cJSON_IsNumber(use_com))
+		{
 			cfg.UsbCom.use_com = use_com->valueint;
 		}
 
@@ -117,34 +117,63 @@ Config load_config(const char *filename)
 	}
 
 	cJSON *hid = cJSON_GetObjectItem(root, "usb_hid");
-	if (hid)
+	if (hid && cJSON_IsObject(hid))
 	{
 		cJSON *use_hid = cJSON_GetObjectItem(hid, "use_hid");
 		cJSON *vid_json = cJSON_GetObjectItem(hid, "vid");
 		cJSON *pid_json = cJSON_GetObjectItem(hid, "pid");
+		cJSON *endpoint_json = cJSON_GetObjectItem(hid, "endpoint");
+		cJSON *layout_json = cJSON_GetObjectItem(hid, "keyboard_layout");
 
-		const char *layout_str = cJSON_GetObjectItem(hid, "keyboard_layout")->valuestring;
-		if (strcmp(layout_str, "us") == 0){
-			cfg.UsbHid.keyboard_layout = LAYOUT_US;
-		}else if (strcmp(layout_str, "de") == 0){
-			cfg.UsbHid.keyboard_layout = LAYOUT_DE;
-		}
-		else{
-			fprintf(stderr, "[Config] usb_hid.keyboard_layout invalid, defaulting to US layout\n");
-			fprintf(stderr, "[Config] USB HID keyboard layout must be either 'us' or 'de'\n");
-			cfg.UsbHid.keyboard_layout = LAYOUT_US;
-		}
-
-		if (cJSON_IsNumber(use_hid)){
+		if (cJSON_IsNumber(use_hid))
+		{
 			cfg.UsbHid.use_hid = use_hid->valueint;
 		}
 
 		if (cJSON_IsString(vid_json) && cJSON_IsString(pid_json))
 		{
-			cfg.UsbHid.vid = (int)strtol(vid_json->valuestring, NULL, 16); // Convert hex string to int
+			cfg.UsbHid.vid = (int)strtol(vid_json->valuestring, NULL, 16);
 			cfg.UsbHid.pid = (int)strtol(pid_json->valuestring, NULL, 16);
 		}
-		cfg.UsbHid.endpoint = cJSON_GetObjectItem(hid, "endpoint")->valueint;
+		else
+		{
+			fprintf(stderr, "[Config] usb_hid.vid or pid missing/invalid\n");
+			cfg.UsbHid.vid = 0;
+			cfg.UsbHid.pid = 0;
+		}
+
+		if (cJSON_IsNumber(endpoint_json))
+		{
+			cfg.UsbHid.endpoint = endpoint_json->valueint;
+		}
+		else
+		{
+			fprintf(stderr, "[Config] usb_hid.endpoint missing or invalid, defaulting to 0\n");
+			cfg.UsbHid.endpoint = 0;
+		}
+
+		if (layout_json && cJSON_IsString(layout_json))
+		{
+			const char *layout_str = layout_json->valuestring;
+			if (strcmp(layout_str, "us") == 0)
+			{
+				cfg.UsbHid.keyboard_layout = LAYOUT_US;
+			}
+			else if (strcmp(layout_str, "de") == 0)
+			{
+				cfg.UsbHid.keyboard_layout = LAYOUT_DE;
+			}
+			else
+			{
+				fprintf(stderr, "[Config] usb_hid.keyboard_layout invalid, using default (us)\n");
+				cfg.UsbHid.keyboard_layout = LAYOUT_US;
+			}
+		}
+		else
+		{
+			fprintf(stderr, "[Config] usb_hid.keyboard_layout missing, using default (us)\n");
+			cfg.UsbHid.keyboard_layout = LAYOUT_US;
+		}
 	}
 
 	cJSON *fwd = cJSON_GetObjectItem(root, "forwarder");
@@ -164,55 +193,121 @@ Config load_config(const char *filename)
 	return cfg;
 }
 
-void print_config(const Config *cfg)
+int secure_config_and_save(const char *raw_json, const char *path)
 {
-    printf("=== NodeBridge Config ===\n");
-    printf("verision: %s\n", cfg->General.version);
-    printf("hostname: %s\n", cfg->General.hostname);
+	
+    if (!raw_json || !path) {
+        fprintf(stderr, "[Config] Invalid arguments to secure_config_and_save\n");
+        return -1;
+    }
 
-    printf("\n[WebServer]\n");
-    printf("host: %s\n", cfg->Webserver.host);
-    printf("port: %d\n", cfg->Webserver.port);
+    printf("[Config] Raw input JSON: %s\n", raw_json);
 
-    printf("\n[TCP]\n");
-    printf("tcp_mode: %s\n", cfg->Tcp.mode);
-    printf("tcp_port: %d\n", cfg->Tcp.port);
-    printf("tcp_host: %s\n", cfg->Tcp.host);
+    cJSON *root = cJSON_Parse(raw_json);
+    if (!root) {
+        fprintf(stderr, "[Config] Failed to parse JSON input\n");
+        return -1;
+    }
 
-    printf("\n[Wi-Fi]\n");
-    printf("ssid: %s\n", cfg->Wifi.ssid);
-    printf("password: %s\n", cfg->Wifi.password);
-    printf("static_ip: %s\n", cfg->Wifi.static_ip);
-    printf("gateway: %s\n", cfg->Wifi.gateway);
-    printf("dns: %s\n", cfg->Wifi.dns);
-    printf("use_dhcp: %d\n", cfg->Wifi.use_dhcp);
+    cJSON *wifi = cJSON_GetObjectItemCaseSensitive(root, "wifi");
+    if (!wifi || !cJSON_IsObject(wifi)) {
+        fprintf(stderr, "[Config] 'wifi' object missing or invalid in config\n");
+    } else {
+        cJSON *pw = cJSON_GetObjectItemCaseSensitive(wifi, "password");
 
-    printf("\n[Lan]\n");
-    printf("static_ip: %s\n", cfg->Lan.static_ip);
-    printf("gateway: %s\n", cfg->Lan.gateway);
-    printf("dns: %s\n", cfg->Lan.dns);
+        if (!pw) {
+            fprintf(stderr, "[Config] 'password' key not found in wifi section\n");
+        } else if (!cJSON_IsString(pw)) {
+            fprintf(stderr, "[Config] 'password' is not a string\n");
+        } else if (!pw->valuestring) {
+            fprintf(stderr, "[Config] 'password' string is NULL\n");
+        } else if (strlen(pw->valuestring) == 0) {
+            fprintf(stderr, "[Config] 'password' is an empty string — skipping encryption\n");
+        } else {
+            printf("[Config] Encrypting Wi-Fi password: %s\n", pw->valuestring);
 
-    printf("\n[USB-COM]\n");
-    printf("use_com: %d\n", cfg->UsbCom.use_com);
-    printf("port: %s\n", cfg->UsbCom.port);
-    printf("baudrate: %d\n", cfg->UsbCom.baudrate);
-    printf("databits: %d\n", cfg->UsbCom.databits);
-    printf("stopbits: %d\n", cfg->UsbCom.stopbits);
-    printf("parity: %s\n", cfg->UsbCom.parity);
+            char *encrypted = NULL;
+            if (!encrypt(pw->valuestring, &encrypted)) {
+                fprintf(stderr, "[Config] Encryption failed\n");
+                cJSON_Delete(root);
+                return -1;
+            }
 
-    printf("\n[USB-HID]\n");
-    printf("use_hid: %d\n", cfg->UsbHid.use_hid);
-    printf("VID: %04x (%d)\n", cfg->UsbHid.vid, cfg->UsbHid.vid);
-    printf("PID: %04x (%d)\n", cfg->UsbHid.pid, cfg->UsbHid.pid);
-    printf("Endpoint: %d\n", cfg->UsbHid.endpoint);
-    printf("Layout: %s\n", cfg->UsbHid.keyboard_layout == LAYOUT_DE ? "de" : "us");
+            // Replace plaintext password with encrypted
+            cJSON_DeleteItemFromObject(wifi, "password");
+            cJSON_AddStringToObject(wifi, "password", encrypted);
+            free(encrypted);
+        }
+    }
 
-    printf("\n[Forwarder]\n");
-    printf("use_interval: %d\n", cfg->Forwarder.use_interval);
-    printf("interval_ms: %d\n", cfg->Forwarder.interval_ms);
-    printf("=========================\n");
+    char *modified_json = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+
+    if (!modified_json) {
+        fprintf(stderr, "[Config] Failed to serialize modified JSON\n");
+        return -1;
+    }
+
+    printf("[Config] Saving modified config to: %s\n", path);
+    int result = save_file(path, modified_json, strlen(modified_json));
+    free(modified_json);
+
+    if (result != 0) {
+        fprintf(stderr, "[Config] Failed to write to config file: %s\n", path);
+    } else {
+        printf("[Config] Config saved successfully.\n");
+    }
+
+    return result;
 }
 
-//! TODO: Implement save_config function
+void print_config(const Config *cfg)
+{
+	printf("=== NodeBridge Config ===\n");
+	printf("verision: %s\n", cfg->General.version);
+	printf("hostname: %s\n", cfg->General.hostname);
+
+	printf("\n[WebServer]\n");
+	printf("host: %s\n", cfg->Webserver.host);
+	printf("port: %d\n", cfg->Webserver.port);
+
+	printf("\n[TCP]\n");
+	printf("tcp_mode: %s\n", cfg->Tcp.mode);
+	printf("tcp_port: %d\n", cfg->Tcp.port);
+	printf("tcp_host: %s\n", cfg->Tcp.host);
+
+	printf("\n[Wi-Fi]\n");
+	printf("ssid: %s\n", cfg->Wifi.ssid);
+	printf("password: %s\n", cfg->Wifi.password);
+	printf("static_ip: %s\n", cfg->Wifi.static_ip);
+	printf("gateway: %s\n", cfg->Wifi.gateway);
+	printf("dns: %s\n", cfg->Wifi.dns);
+	printf("use_dhcp: %d\n", cfg->Wifi.use_dhcp);
+
+	printf("\n[Lan]\n");
+	printf("static_ip: %s\n", cfg->Lan.static_ip);
+	printf("gateway: %s\n", cfg->Lan.gateway);
+	printf("dns: %s\n", cfg->Lan.dns);
+
+	printf("\n[USB-COM]\n");
+	printf("use_com: %d\n", cfg->UsbCom.use_com);
+	printf("port: %s\n", cfg->UsbCom.port);
+	printf("baudrate: %d\n", cfg->UsbCom.baudrate);
+	printf("databits: %d\n", cfg->UsbCom.databits);
+	printf("stopbits: %d\n", cfg->UsbCom.stopbits);
+	printf("parity: %s\n", cfg->UsbCom.parity);
+
+	printf("\n[USB-HID]\n");
+	printf("use_hid: %d\n", cfg->UsbHid.use_hid);
+	printf("VID: %04x (%d)\n", cfg->UsbHid.vid, cfg->UsbHid.vid);
+	printf("PID: %04x (%d)\n", cfg->UsbHid.pid, cfg->UsbHid.pid);
+	printf("Endpoint: %d\n", cfg->UsbHid.endpoint);
+	printf("Layout: %s\n", cfg->UsbHid.keyboard_layout == LAYOUT_DE ? "de" : "us");
+
+	printf("\n[Forwarder]\n");
+	printf("use_interval: %d\n", cfg->Forwarder.use_interval);
+	printf("interval_ms: %d\n", cfg->Forwarder.interval_ms);
+	printf("=========================\n");
+}
 
 //! TODO: Load Config as JSON string for js
